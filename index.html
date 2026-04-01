@@ -13,17 +13,17 @@
   --mono:'IBM Plex Mono','Courier New',monospace;--sans:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;overflow-x:hidden;width:100%}
 .header{background:var(--surface);border-bottom:2px solid var(--accent);padding:0 24px;display:flex;align-items:center;gap:16px;height:54px;position:sticky;top:0;z-index:100}
 .logo{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent);letter-spacing:1px}
 .logo em{color:var(--muted);font-size:11px;font-style:normal;margin-left:8px}
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 8px}
-.tab{flex:1;padding:11px 6px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;text-align:center;min-width:0}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:10px 10px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:3px;text-align:center;white-space:nowrap}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
 .tab .badge-dot.show{display:inline-block}
-.content{padding:20px;max-width:1200px;margin:0 auto}
+.content{padding:20px;max-width:1200px;margin:0 auto;box-sizing:border-box}
 .panel{display:none}
 .panel.active{display:block}
 
@@ -147,7 +147,21 @@ tbody tr:hover{background:rgba(255,255,255,.025)}
 .text-m{color:var(--muted)}.text-g{color:var(--green)}.text-r{color:var(--red)}.text-a{color:var(--accent)}.text-b{color:var(--blue)}
 .mono{font-family:var(--mono)}.fw7{font-weight:700}.fs12{font-size:12px}.fs11{font-size:11px}
 
-@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}.content{padding:12px}}
+.hide-mobile{display:inline}
+@media(max-width:640px){.hide-mobile{display:none}
+
+  .grid2,.grid3{grid-template-columns:1fr}
+  .content{padding:10px}
+  .card{padding:14px}
+  .section-title{font-size:15px;margin-bottom:12px}
+  .stat-v{font-size:17px}
+  input,select{font-size:16px!important}
+  .tab{font-size:10px;padding:7px 1px}
+  .header{height:48px;padding:0 14px}
+  .logo{font-size:13px}
+  .logo em{display:none}
+  .btn{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -156,7 +170,7 @@ tbody tr:hover{background:rgba(255,255,255,.025)}
   <div class="logo">영성강업 <em>STEEL WORKS v3.0</em></div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
     <div style="font-size:12px;color:var(--muted)" id="hdr-date"></div>
-    <button class="btn btn-ghost btn-sm" onclick="toggleSettings()" style="font-size:13px;padding:5px 12px">⚙️ 설정</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleSettings()" style="font-size:13px;padding:5px 10px">⚙️ <span class="hide-mobile">설정</span></button>
   </div>
 </div>
 
@@ -201,11 +215,11 @@ tbody tr:hover{background:rgba(255,255,255,.025)}
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="goTab('intake',this)">📸 주문 접수</div>
-  <div class="tab" onclick="goTab('plan',this)">📊 생산 계획 <div class="badge-dot" id="dot-plan"></div></div>
-  <div class="tab" onclick="goTab('workop',this)">✂️ 가공 및 운반 <div class="badge-dot" id="dot-del"></div></div>
-  <div class="tab" onclick="goTab('invoice',this)">🧾 거래명세서 <div class="badge-dot" id="dot-co"></div></div>
-  <div class="tab" onclick="goTab('coils',this)">🗄️ 코일 재고</div>
+  <div class="tab active" onclick="goTab('intake',this)"><span class="tab-icon">📸</span><span class="tab-txt">주문접수</span></div>
+  <div class="tab" onclick="goTab('plan',this)"><span class="tab-icon">📊</span><span class="tab-txt">생산계획</span><div class="badge-dot" id="dot-plan"></div></div>
+  <div class="tab" onclick="goTab('workop',this)"><span class="tab-icon">✂️</span><span class="tab-txt">가공·운반</span><div class="badge-dot" id="dot-del"></div></div>
+  <div class="tab" onclick="goTab('invoice',this)"><span class="tab-icon">🧾</span><span class="tab-txt">명세서</span><div class="badge-dot" id="dot-co"></div></div>
+  <div class="tab" onclick="goTab('coils',this)"><span class="tab-icon">🗄️</span><span class="tab-txt">재고</span></div>
 </div>
 
 <!-- ============================================================
@@ -264,7 +278,7 @@ tbody tr:hover{background:rgba(255,255,255,.025)}
 
       <!-- 품목 테이블 -->
       <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:10px">
-        <table style="width:100%;border-collapse:collapse;min-width:580px">
+        <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:var(--surface)">
               <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center;width:32px">#</th>
@@ -726,7 +740,7 @@ async function processFile(file) {
       + '\n\n규칙: 숫자는 단위 없이 숫자만. 빈 행은 제외. 불확실하면 null. 모든 행을 빠짐없이 추출.';
 
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetch('/api/claude', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
@@ -815,14 +829,14 @@ function renderBulkTable(){
 
     return '<tr style="border-bottom:1px solid var(--border)">'
       + '<td style="padding:4px 6px;text-align:center;color:var(--muted);font-size:12px;font-family:var(--mono)">'+(idx+1)+'</td>'
-      + '<td style="padding:3px 4px"><input type="number" step="0.1" placeholder="1.2" value="'+row.t+'" oninput="bulkRows['+idx+'].t=this.value;updateBulkCount()" style="width:60px;font-size:13px;text-align:right"></td>'
-      + '<td style="padding:3px 4px"><input type="number" placeholder="300" value="'+row.w+'" oninput="bulkRows['+idx+'].w=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>'
+      + '<td style="padding:3px 4px"><input type="number" step="0.1" placeholder="1.2" value="'+row.t+'" oninput="bulkRows['+idx+'].t=this.value;updateBulkCount()" style="width:52px;font-size:12px;text-align:right"></td>'
+      + '<td style="padding:3px 4px"><input type="number" placeholder="300" value="'+row.w+'" oninput="bulkRows['+idx+'].w=this.value;updateBulkCount()" style="width:58px;font-size:12px;text-align:right"></td>'
       // 길이: 판재는 입력, 코일은 숨김
       + (isCoil
-          ? '<td style="padding:3px 4px;color:var(--border);text-align:center;font-size:11px">—</td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="1000" value="'+row.h+'" oninput="bulkRows['+idx+'].h=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>')
+          ? '<td style="padding:3px 4px;color:var(--border);text-align:center;font-size:11px">—</td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="1000" value="'+row.h+'" oninput="bulkRows['+idx+'].h=this.value;updateBulkCount()" style="width:58px;font-size:12px;text-align:right"></td>')
       // 장수(판재) or 주문중량kg(코일)
       + (isCoil
-          ? '<td style="padding:3px 4px"><input type="number" placeholder="중량kg" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:72px;font-size:13px;text-align:right;background:rgba(88,166,255,.07);border-color:var(--blue)" title="코일 주문 중량(kg)"></td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="100" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>')      + '<td style="padding:3px 4px"><select oninput="bulkRows['+idx+'].type=this.value;renderBulkTable()" style="font-size:12px;padding:4px 5px">'        + '<option value="판재"'+(row.type==='판재'?' selected':'')+'>판재</option>'        + '<option value="코일"'+(row.type==='코일'?' selected':'')+'>코일</option>'        + '</select></td>'      + '<td style="padding:3px 4px"><input type="text" placeholder="비고" value="'+row.note+'" oninput="bulkRows['+idx+'].note=this.value" style="width:80px;font-size:12px"></td>'      + '<td style="padding:3px 8px;text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap;color:'+wtColor+'">'+calcWt+'</td>'      + '<td style="padding:3px 6px;text-align:center">'        + '<button onclick="removeBulkRow('+idx+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1" title="삭제">×</button>'      + '</td>'      + '</tr>';
+          ? '<td style="padding:3px 4px"><input type="number" placeholder="중량kg" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:60px;font-size:12px;text-align:right;background:rgba(88,166,255,.07);border-color:var(--blue)" title="코일 주문 중량(kg)"></td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="100" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:58px;font-size:12px;text-align:right"></td>')      + '<td style="padding:3px 4px"><select oninput="bulkRows['+idx+'].type=this.value;renderBulkTable()" style="font-size:12px;padding:4px 5px">'        + '<option value="판재"'+(row.type==='판재'?' selected':'')+'>판재</option>'        + '<option value="코일"'+(row.type==='코일'?' selected':'')+'>코일</option>'        + '</select></td>'      + '<td style="padding:3px 4px"><input type="text" placeholder="비고" value="'+row.note+'" oninput="bulkRows['+idx+'].note=this.value" style="width:68px;font-size:12px"></td>'      + '<td style="padding:3px 8px;text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap;color:'+wtColor+'">'+calcWt+'</td>'      + '<td style="padding:3px 6px;text-align:center">'        + '<button onclick="removeBulkRow('+idx+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1" title="삭제">×</button>'      + '</td>'      + '</tr>';
   }).join('');
   updateBulkStats();
 }
@@ -2000,7 +2014,7 @@ async function processCoilFile(file){
       + ' 숫자는 단위 없이 숫자만. 불명확하면 null. 설명 없이 JSON만.';
 
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetch('/api/claude', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
@@ -2038,11 +2052,11 @@ function showCoilOCRResult(coils){
       +'<td style="padding:5px 4px;text-align:center;color:var(--muted);font-size:12px">'+(i+1)+'</td>'
       +'<td style="padding:4px"><input type="number" step="0.1" value="'+(coil.t||'')+'" class="ci-t" style="width:60px;font-size:12px"></td>'
       +'<td style="padding:4px"><input type="number" value="'+(coil.w||'')+'" class="ci-w" style="width:70px;font-size:12px"></td>'
-      +'<td style="padding:4px"><input type="number" value="'+(coil.weight||'')+'" class="ci-wt" style="width:80px;font-size:12px"></td>'
-      +'<td style="padding:4px"><input type="number" value="'+(coil.price||'')+'" class="ci-price" style="width:80px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="number" value="'+(coil.weight||'')+'" class="ci-wt" style="width:68px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="number" value="'+(coil.price||'')+'" class="ci-price" style="width:68px;font-size:12px"></td>'
       +'<td style="padding:4px"><input type="date" value="'+(coil.date||'')+'" class="ci-date" style="width:130px;font-size:12px"></td>'
       +'<td style="padding:4px"><input type="text" value="'+(coil.supplier||'')+'" class="ci-sup" style="width:90px;font-size:12px"></td>'
-      +'<td style="padding:4px"><input type="text" value="'+(coil.no||'')+'" class="ci-no" style="width:80px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="text" value="'+(coil.no||'')+'" class="ci-no" style="width:68px;font-size:12px"></td>'
       +'<td style="padding:4px;text-align:center"><input type="checkbox" class="ci-chk" checked style="accent-color:var(--accent);width:15px;height:15px"></td>'
       +'</tr>';
   }).join('');
