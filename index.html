@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영성강업 작업관리</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0f1113;--surface:#171a1d;--card:#1e2329;--border:#2d333b;
+  --accent:#e8732a;--accent2:#f5a623;--text:#dce3ec;--muted:#5d6b7a;
+  --green:#3dd68c;--red:#f96c6c;--blue:#58a6ff;--purple:#c084fc;
+  --mono:'IBM Plex Mono','Courier New',monospace;--sans:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh}
+.header{background:var(--surface);border-bottom:2px solid var(--accent);padding:0 24px;display:flex;align-items:center;gap:16px;height:54px;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent);letter-spacing:1px}
+.logo em{color:var(--muted);font-size:11px;font-style:normal;margin-left:8px}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 8px}
+.tab{flex:1;padding:11px 6px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;text-align:center;min-width:0}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
+.tab .badge-dot.show{display:inline-block}
+.content{padding:20px;max-width:1200px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+
+/* LAYOUT */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.section-title{font-size:17px;font-weight:700;margin-bottom:18px}
+.section-title small{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.stat-l{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.stat-v{font-family:var(--mono);font-size:20px;font-weight:600}
+.stat-s{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+input,select,textarea{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 10px;width:100%;transition:border-color .15s}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+input[type=number]{text-align:right}
+select option{background:var(--surface)}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border:none;border-radius:6px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--text)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--border)}.btn-danger:hover{background:var(--red);color:#fff}
+.btn-green{background:var(--green);color:#111}.btn-green:hover{background:#5de8a8}
+.btn-blue{background:var(--blue);color:#111}.btn-blue:hover{background:#7ab8ff}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{opacity:.85}
+.btn-sm{padding:4px 10px;font-size:12px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface)}
+th{padding:9px 11px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:9px 11px;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+.num{font-family:var(--mono);text-align:right}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.b-orange{background:rgba(232,115,42,.15);color:var(--accent)}
+.b-green{background:rgba(61,214,140,.15);color:var(--green)}
+.b-blue{background:rgba(88,166,255,.15);color:var(--blue)}
+.b-red{background:rgba(249,108,108,.15);color:var(--red)}
+.b-purple{background:rgba(192,132,252,.15);color:var(--purple)}
+
+/* PHOTO ZONE */
+.photo-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
+.photo-zone:hover{border-color:var(--accent);background:rgba(232,115,42,.05)}
+.photo-zone.drag{border-color:var(--accent);background:rgba(232,115,42,.1)}
+.photo-preview{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border)}
+.ocr-loading{display:flex;align-items:center;gap:10px;color:var(--accent);font-family:var(--mono);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PROCESS FLOW */
+.flow{display:flex;align-items:center;gap:0;margin:16px 0;flex-wrap:wrap;gap:4px}
+.flow-step{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted)}
+.flow-step.done{background:rgba(61,214,140,.1);border-color:var(--green);color:var(--green)}
+.flow-step.active{background:rgba(232,115,42,.1);border-color:var(--accent);color:var(--accent)}
+.flow-arrow{color:var(--muted);font-size:14px;padding:0 2px}
+
+/* PATTERN BAR */
+.pat-bar{display:flex;height:44px;border-radius:6px;overflow:visible;border:1px solid var(--border);background:var(--bg)}
+.pat-strip{height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;color:#fff;position:relative}
+.pat-strip .tip{display:none;position:absolute;bottom:calc(100%+5px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:3px 8px;border-radius:5px;font-size:11px;white-space:nowrap;z-index:20;color:var(--text)}
+.pat-strip:hover .tip{display:block}
+.kerf-div{background:#111;min-width:1px;height:100%}
+.loss-strip{background:repeating-linear-gradient(45deg,#2a1212,#2a1212 4px,#321a1a 4px,#321a1a 8px)}
+
+/* COIL CARD */
+.coil-card{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.coil-card:hover{border-color:var(--muted)}
+.coil-card.sel{border-color:var(--accent);background:rgba(232,115,42,.07)}
+.wbar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.wfill{height:100%;background:var(--green);border-radius:3px}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* CARRYOVER */
+.co-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:8px}
+
+/* PRINT */
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff;color:#000}
+  .print-doc{background:#fff!important;color:#000!important;border:none!important;padding:0!important}
+}
+.doc{font-family:var(--sans);color:#000;background:#fff;padding:24px;border-radius:8px}
+.doc-title{text-align:center;font-size:20px;font-weight:900;letter-spacing:2px;padding:14px 0;border-bottom:3px solid #000;margin-bottom:18px}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;margin-bottom:16px}
+.doc-cell{padding:9px 12px;border-bottom:1px solid #bbb}
+.doc-cell:nth-child(odd){border-right:1px solid #bbb}
+.doc-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.doc-val{font-size:13px;font-weight:600;font-family:monospace}
+.doc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.doc-table th{background:#111;color:#fff;padding:7px 9px;font-size:10px;font-weight:700;text-align:center}
+.doc-table td{border:1px solid #ccc;padding:7px 9px;text-align:center}
+.doc-table tr:nth-child(even) td{background:#f6f6f6}
+.doc-sign{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:3px solid #000;border:1px solid #000;margin-top:16px}
+.doc-sign-c{padding:36px 12px 10px;text-align:center;border-right:1px solid #ccc;font-size:11px;font-weight:700}
+.doc-sign-c:last-child{border-right:none}
+.doc-pat{display:flex;height:38px;border:2px solid #000;border-radius:3px;overflow:hidden;margin:10px 0}
+.doc-ps{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.doc-loss{background:repeating-linear-gradient(45deg,#ddd,#ddd 4px,#eee 4px,#eee 8px);color:#999}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.flex{display:flex}.gap6{gap:6px}.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}
+.items-c{align-items:center}.justify-b{justify-content:space-between}.flex-wrap{flex-wrap:wrap}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.tc{text-align:center}.tr{text-align:right}
+.text-m{color:var(--muted)}.text-g{color:var(--green)}.text-r{color:var(--red)}.text-a{color:var(--accent)}.text-b{color:var(--blue)}
+.mono{font-family:var(--mono)}.fw7{font-weight:700}.fs12{font-size:12px}.fs11{font-size:11px}
+
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}.content{padding:12px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">영성강업 <em>STEEL WORKS v3.0</em></div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+    <div style="font-size:12px;color:var(--muted)" id="hdr-date"></div>
+    <button class="btn btn-ghost btn-sm" onclick="toggleSettings()" style="font-size:13px;padding:5px 12px">⚙️ 설정</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-panel" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:20px 24px;max-height:80vh;overflow-y:auto">
+  <div style="max-width:1200px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700">⚙️ 설정</div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleSettings()">✕ 닫기</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- 공급자 정보 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🏭 공급자 정보 (영성강업)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="fg"><label>상호</label><input id="sup-name" placeholder="영성강업" oninput="saveSupplier()"></div>
+          <div class="fg"><label>대표자</label><input id="sup-rep" placeholder="홍길동" oninput="saveSupplier()"></div>
+          <div class="fg"><label>사업자번호</label><input id="sup-biz" placeholder="000-00-00000" oninput="saveSupplier()"></div>
+          <div class="fg"><label>전화</label><input id="sup-tel" placeholder="02-0000-0000" oninput="saveSupplier()"></div>
+          <div class="fg" style="grid-column:span 2"><label>주소</label><input id="sup-addr" placeholder="서울시 ..." oninput="saveSupplier()"></div>
+        </div>
+      </div>
+
+      <!-- 거래처 관리 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🏢 거래처 관리</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div class="fg" style="grid-column:span 2"><label>거래처명 *</label><input id="cu-name" type="text" placeholder="대한철강"></div>
+          <div class="fg"><label>담당자</label><input id="cu-contact" type="text" placeholder="홍길동"></div>
+          <div class="fg"><label>전화</label><input id="cu-phone" type="text" placeholder="02-0000-0000"></div>
+          <div class="fg"><label>팩스</label><input id="cu-fax" type="text" placeholder="02-0000-0001"></div>
+          <div class="fg"><label>사업자번호</label><input id="cu-biz" type="text" placeholder="000-00-00000"></div>
+          <div class="fg" style="grid-column:span 2"><label>납품지 주소</label><input id="cu-addr" type="text" placeholder="서울시 강남구 ..."></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addCustomer()" style="margin-bottom:12px">+ 거래처 등록</button>
+        <div id="customer-list" style="max-height:200px;overflow-y:auto"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="goTab('intake',this)">📸 주문 접수</div>
+  <div class="tab" onclick="goTab('plan',this)">📊 생산 계획 <div class="badge-dot" id="dot-plan"></div></div>
+  <div class="tab" onclick="goTab('workop',this)">✂️ 가공 및 운반 <div class="badge-dot" id="dot-del"></div></div>
+  <div class="tab" onclick="goTab('invoice',this)">🧾 거래명세서 <div class="badge-dot" id="dot-co"></div></div>
+  <div class="tab" onclick="goTab('coils',this)">🗄️ 코일 재고</div>
+</div>
+
+<!-- ============================================================
+     TAB 1: 주문 접수
+============================================================ -->
+<div id="panel-intake" class="panel active content">
+  <div class="section-title">주문 접수 <small>사진 촬영 또는 직접 입력</small></div>
+
+  <div class="grid2">
+    <!-- 사진 OCR -->
+    <div class="card">
+      <div class="card-title">📷 주문서 사진으로 읽기</div>
+      <!-- 카메라 / 파일 버튼 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <button class="btn btn-primary" onclick="document.getElementById('cam-inp').click()" style="padding:14px;font-size:15px;justify-content:center;border-radius:8px">
+          📷 지금 바로 촬영
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('file-inp').click()" style="padding:14px;font-size:14px;justify-content:center;border-radius:8px">
+          📁 파일 선택
+        </button>
+      </div>
+      <!-- 드래그 영역 (PC용) -->
+      <div class="photo-zone" id="drop-zone"
+           ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)" style="padding:20px;cursor:default">
+        <div id="photo-placeholder">
+          <div style="font-size:28px;margin-bottom:8px">🖼️</div>
+          <div class="text-m fs12">또는 여기에 파일을 드래그</div>
+        </div>
+        <div id="photo-show" style="display:none"></div>
+      </div>
+      <input type="file" id="file-inp" accept="image/*,application/pdf" style="display:none" onchange="handleFile(this)">
+      <input type="file" id="cam-inp" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+      <div id="ocr-status" class="mt8" style="display:none"></div>
+      <div id="ocr-result" class="mt8" style="display:none"></div>
+    </div>
+
+    <!-- 일괄 입력 -->
+    <div class="card">
+      <div class="card-title">✏️ 주문 일괄 입력</div>
+
+      <!-- 거래처 & 기본정보 -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px">
+        <div class="fg" style="grid-column:span 2">
+          <label>거래처</label>
+          <div style="display:flex;gap:6px">
+            <select id="i-cust-sel" onchange="fillCustomerFromSel(this.value)" style="flex:1.2">
+              <option value="">── 등록 거래처 선택 ──</option>
+            </select>
+            <input id="i-cust" placeholder="또는 직접 입력" type="text" style="flex:1">
+          </div>
+        </div>
+        <div class="fg"><label>주문 년월</label><input id="i-month" type="month" value=""></div>
+        <div class="fg"><label>납기일</label><input id="i-due" type="date"></div>
+      </div>
+
+      <!-- 품목 테이블 -->
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:10px">
+        <table style="width:100%;border-collapse:collapse;min-width:580px">
+          <thead>
+            <tr style="background:var(--surface)">
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center;width:32px">#</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">두께(t)</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">폭(mm)</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">길이(mm)<br><span style="color:var(--border)">코일:생략</span></th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">장수<br><span style="color:var(--border)">코일:중량kg</span></th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">출하</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">비고</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-align:center">중량(kg)</th>
+              <th style="padding:8px 10px;width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="bulk-tbody"></tbody>
+        </table>
+      </div>
+      <div class="flex gap8 items-c">
+        <button class="btn btn-ghost btn-sm" onclick="addBulkRow()">+ 행 추가</button>
+        <span class="text-m fs12" id="bulk-count"></span>
+        <div style="margin-left:auto" class="flex gap8">
+          <button class="btn btn-ghost" onclick="clearBulkForm()">초기화</button>
+          <button class="btn btn-primary" onclick="submitBulkOrders()">📥 전체 등록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주문 목록 -->
+  <div class="card">
+    <div class="card-title flex justify-b items-c" style="margin-bottom:10px">
+      <span>접수 주문 목록</span>
+      <div class="flex gap6">
+        <select id="filter-month" onchange="renderOrders()" style="width:130px;font-size:12px;padding:4px 8px">
+          <option value="">전체 월</option>
+        </select>
+        <select id="filter-status" onchange="renderOrders()" style="width:110px;font-size:12px;padding:4px 8px">
+          <option value="">전체 상태</option>
+          <option>접수</option><option>계획중</option><option>가공중</option><option>완료</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th><input type="checkbox" id="chk-all" onchange="toggleAll(this)" style="accent-color:var(--accent)"></th>
+          <th>#</th><th>거래처</th><th>년월</th><th>두께</th><th>가로×세로</th><th>주문량</th>
+          <th>출하형태</th><th>납기</th><th>상태</th><th></th>
+        </tr></thead>
+        <tbody id="order-tbody"></tbody>
+      </table>
+    </div>
+    <div class="mt8 flex gap6" id="batch-actions" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="batchStatus('계획중')">📊 계획중으로</button>
+      <button class="btn btn-ghost btn-sm" onclick="batchStatus('완료')">✅ 완료</button>
+      <button class="btn btn-danger btn-sm" onclick="batchDelete()">🗑 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TAB 2: 생산 계획
+============================================================ -->
+<div id="panel-plan" class="panel content">
+  <div class="section-title">생산 계획 <small>코일 선택 → 생산 가능량 계산 → 거래처 확인</small></div>
+
+  <!-- 주문 선택 (다중) -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between">
+      <span>① 계획할 주문 선택 <span class="text-m" style="font-weight:400;text-transform:none">(여러 건 동시 선택 가능)</span></span>
+      <button class="btn btn-ghost btn-sm" onclick="planOrderIds=[];planCoilIds=[];renderPlan();document.getElementById('plan-result').style.display='none'">초기화</button>
+    </div>
+    <div id="plan-order-list"></div>
+  </div>
+
+  <!-- 코일 선택 (다중) -->
+  <div class="card">
+    <div class="card-title">② 사용 코일 선택 <span class="text-m" style="font-weight:400;text-transform:none">(여러 코일 체크 가능)</span></div>
+    <div id="plan-coil-list"></div>
+    <div class="mt10 flex gap8 items-c flex-wrap">
+      <div style="font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+        에지 트림 <strong style="color:var(--text);font-family:var(--mono)">양쪽 5mm = 10mm</strong> 자동 적용
+      </div>
+    </div>
+  </div>
+
+  <!-- 계산 버튼 -->
+  <div class="tc mt8 mb12">
+    <button class="btn btn-primary" style="padding:10px 36px;font-size:15px" onclick="runPlan()">⚡ 최적 패턴 계산</button>
+  </div>
+
+  <!-- 결과 -->
+  <div id="plan-result" style="display:none"></div>
+</div>
+
+<!-- ============================================================
+     가공 및 운반
+============================================================ -->
+<div id="panel-workop" class="panel content">
+  <div class="section-title">가공 및 운반 <small>가공 지시서 → 송장·납품서</small></div>
+
+  <!-- ── 가공 지시 ── -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">1</div>
+    <div style="font-size:15px;font-weight:700">가공 지시서</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">지시서 발행할 주문 선택</div>
+    <div id="process-order-list"></div>
+  </div>
+  <div class="tc mt8">
+    <button class="btn btn-primary" style="padding:10px 32px" onclick="genProcessDocs()">📋 가공 지시서 생성</button>
+  </div>
+  <div id="process-docs" class="mt12"></div>
+
+  <div class="divider" style="margin:24px 0"></div>
+
+  <!-- ── 송장·납품서 ── -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">2</div>
+    <div style="font-size:15px;font-weight:700">송장 · 납품서</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚛 출하 정보</div>
+    <div class="fg" style="margin-bottom:12px;max-width:320px">
+      <label>수취처 선택</label>
+      <select id="del-cust-sel" onchange="fillDeliveryCustomer(this.value)">
+        <option value="">── 거래처 선택하면 주소 자동 입력 ──</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+      <div class="fg"><label>출하일</label><input id="del-date" type="date"></div>
+      <div class="fg"><label>차량번호</label><input id="del-car" placeholder="12가 3456" type="text"></div>
+      <div class="fg"><label>기사명</label><input id="del-driver" placeholder="홍길동" type="text"></div>
+      <div class="fg"><label>기사 연락처</label><input id="del-tel" placeholder="010-0000-0000" type="text"></div>
+      <div class="fg" style="grid-column:span 2"><label>배송지 주소</label><input id="del-addr" placeholder="수취처 주소" type="text"></div>
+      <div class="fg" style="grid-column:span 2"><label>특이사항</label><input id="del-note" placeholder="취급 주의 등" type="text"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">출하할 주문 선택</div>
+    <div id="del-order-list"><div class="text-m">가공 완료 또는 진행중인 주문이 없습니다.</div></div>
+  </div>
+  <div class="tc mt8">
+    <button class="btn btn-blue" style="padding:10px 32px" onclick="printDelivery()">🖨️ 송장·납품서 출력</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     TAB 4: 거래명세서
+============================================================ -->
+<div id="panel-invoice" class="panel content">
+  <div class="section-title">거래명세서 <small>생산 완료 주문 → 명세서 작성 · 이월 선택</small></div>
+
+  <!-- 주문 선택 -->
+  <div class="card">
+    <div class="card-title">① 명세서에 포함할 주문 선택</div>
+    <div id="inv-order-list"><div class="text-m">확정/가공 완료된 주문이 없습니다.</div></div>
+  </div>
+
+  <div class="tc mt8">
+    <button class="btn btn-primary" style="padding:10px 32px" onclick="buildInvoice()">📋 거래명세서 작성</button>
+  </div>
+
+  <!-- 명세서 작성 영역 -->
+  <div class="divider" style="margin:28px 0"></div>
+  <div style="font-size:15px;font-weight:700;margin-bottom:16px">💰 이윤 계산 <small style="font-size:12px;color:var(--muted);font-weight:400">빠른 견적 계산기</small></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">원가 입력</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label>두께</label><input id="p-t" value="1.2" step="0.1" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>가로 폭 (mm)</label><input id="p-w" value="300" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>세로 (mm)</label><input id="p-h" value="1000" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>장수</label><input id="p-qty" value="100" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>원자재 (원/kg)</label><input id="p-raw" value="1050" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>판매가 (원/kg)</label><input id="p-sell" value="1200" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>가공비 (원/ton)</label><input id="p-proc" value="50000" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>운송비 (원/ton)</label><input id="p-trans" value="20000" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>스캘프 (%)</label><input id="p-scalp" value="2" step="0.1" type="number" oninput="calcProfit()"></div>
+        <div class="fg"><label>고철 (원/kg)</label><input id="p-scrap" value="340" type="number" oninput="calcProfit()"></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">수익 분석</div><div id="profit-out"><div class="text-m" style="padding:12px 0">좌측 입력 시 자동 계산</div></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PRINT WINDOW TARGET
+============================================================ -->
+<div id="print-area" style="display:none">
+  <div id="inv-builder" style="display:none" class="mt12"></div>
+</div>
+
+<!-- ============================================================
+     TAB 5: 코일 재고
+============================================================ -->
+<div id="panel-coils" class="panel content">
+  <div class="section-title">재고 현황</div>
+
+  <!-- 서브탭 -->
+  <div style="display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:16px">
+    <button id="stab-coil" onclick="switchStab('coil')" style="flex:1;padding:7px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;transition:all .15s">🗄️ 원코일</button>
+    <button id="stab-sheet" onclick="switchStab('sheet')" style="flex:1;padding:7px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">📦 판재 재고</button>
+    <button id="stab-scalp" onclick="switchStab('scalp')" style="flex:1;padding:7px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">✂️ 스캘프/잔재</button>
+  </div>
+
+  <!-- 파일로 읽기 -->
+  <div class="card">
+    <div class="card-title">📷 재고 파일로 읽기 <span style="font-weight:400;text-transform:none;color:var(--muted);font-size:11px">사진·표·엑셀 모두 OK</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <button class="btn btn-primary" onclick="document.getElementById('coil-cam-inp').click()" style="padding:12px;justify-content:center">
+        📷 지금 촬영
+      </button>
+      <button class="btn btn-ghost" onclick="document.getElementById('coil-file-inp').click()" style="padding:12px;justify-content:center">
+        📁 파일 선택
+      </button>
+    </div>
+    <div class="photo-zone" id="coil-drop-zone"
+         ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+         ondrop="handleCoilDrop(event)" style="padding:16px;cursor:default">
+      <div id="coil-photo-placeholder">
+        <div style="font-size:22px;margin-bottom:6px">🖼️</div>
+        <div class="text-m fs12">또는 파일을 드래그</div>
+      </div>
+      <div id="coil-photo-show" style="display:none"></div>
+    </div>
+    <input type="file" id="coil-file-inp" accept="image/*,.xlsx,.csv,application/pdf" style="display:none" onchange="processCoilFile(this.files[0])">
+    <input type="file" id="coil-cam-inp" accept="image/*" capture="environment" style="display:none" onchange="processCoilFile(this.files[0])">
+    <div id="coil-ocr-status" class="mt8" style="display:none"></div>
+    <div id="coil-ocr-result" class="mt8" style="display:none"></div>
+  </div>
+
+  <!-- 직접 입력 -->
+  <div class="card">
+    <div class="card-title">✏️ 직접 입력</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
+      <div class="fg"><label>두께 (t)</label><input id="c-t" type="number" placeholder="1.2" step="0.1"></div>
+      <div class="fg"><label>폭 (mm)</label><input id="c-w" type="number" placeholder="1204"></div>
+      <div class="fg"><label>중량 (kg)</label><input id="c-wt" type="number" placeholder="3500"></div>
+      <div class="fg"><label>단가 (원/kg)</label><input id="c-price" type="number" placeholder="1050"></div>
+      <div class="fg"><label>입고일</label><input id="c-date" type="date"></div>
+      <div class="fg"><label>공급처</label><input id="c-sup" type="text" placeholder="포스코"></div>
+      <div class="fg"><label>코일 번호</label><input id="c-no" type="text" placeholder="C-001"></div>
+      <div class="fg" style="justify-content:flex-end;padding-top:18px">
+        <button class="btn btn-primary" onclick="addCoil()">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 원코일 섹션 -->
+  <div id="stab-coil-content">
+    <div class="stats" id="coil-stats"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>번호</th><th>두께</th><th>폭</th><th>입고</th><th>잔여</th>
+          <th>이용률</th><th>단가</th><th>입고일</th><th>공급처</th><th>상태</th><th></th>
+        </tr></thead>
+        <tbody id="coil-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 판재 재고 섹션 -->
+  <div id="stab-sheet-content" style="display:none">
+    <div class="stats" id="sheet-stats"></div>
+    <div class="card">
+      <div class="card-title">➕ 수동 등록 <span style="font-weight:400;font-size:11px;color:var(--muted);text-transform:none">(가공 후 미출하 판재 직접 등록)</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
+        <div class="fg"><label>두께 (t)</label><input id="ss-t" type="number" placeholder="1.2" step="0.1"></div>
+        <div class="fg"><label>폭 (mm)</label><input id="ss-w" type="number" placeholder="300"></div>
+        <div class="fg"><label>길이 (mm)</label><input id="ss-h" type="number" placeholder="1000"></div>
+        <div class="fg"><label>장수</label><input id="ss-qty" type="number" placeholder="100"></div>
+        <div class="fg"><label>거래처(예정)</label><input id="ss-cust" type="text" placeholder="대한철강"></div>
+        <div class="fg"><label>사유</label>
+          <select id="ss-reason">
+            <option>이월</option><option>주문취소</option><option>과잉생산</option><option>기타</option>
+          </select>
+        </div>
+        <div class="fg" style="justify-content:flex-end;padding-top:18px">
+          <button class="btn btn-primary" onclick="addSheetStock()">등록</button>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>두께</th><th>폭×길이</th><th>장수</th><th>중량</th>
+          <th>거래처</th><th>사유</th><th>생성일</th><th>상태</th><th></th>
+        </tr></thead>
+        <tbody id="sheet-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 스캘프/잔재 섹션 -->
+  <div id="stab-scalp-content" style="display:none">
+    <div class="stats" id="scalp-stats"></div>
+    <div class="card">
+      <div class="card-title">➕ 스캘프/잔재 등록</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
+        <div class="fg"><label>두께 (t)</label><input id="sc-t" type="number" placeholder="1.2" step="0.1"></div>
+        <div class="fg"><label>폭 (mm)</label><input id="sc-w" type="number" placeholder="150"></div>
+        <div class="fg"><label>추정 중량 (kg)</label><input id="sc-wt" type="number" placeholder="200"></div>
+        <div class="fg"><label>원코일 번호</label><input id="sc-coilno" type="text" placeholder="C-001"></div>
+        <div class="fg"><label>처리 방법</label>
+          <select id="sc-status">
+            <option value="고철처리" selected>고철 처리</option>
+            <option value="재사용가능">재사용 가능 (100mm↑)</option>
+            <option value="재판매가능">재판매 가능</option>
+          </select>
+        </div>
+        <div class="fg"><label>비고 (로스 mm 등)</label><input id="sc-note" type="text" placeholder="예) 로스 85mm, C-001"></div>
+        <div class="fg" style="justify-content:flex-end;padding-top:18px">
+          <button class="btn btn-primary" onclick="addScalp()">등록</button>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>두께</th><th>폭</th><th>추정중량</th><th>원코일</th>
+          <th>처리방법</th><th>비고</th><th>등록일</th><th>상태</th><th></th>
+        </tr></thead>
+        <tbody id="scalp-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TAB 6: 이윤 계산
+============================================================ -->
+
+<script>
+// ==============================
+// DATA
+// ==============================
+const DENSITY = 7.85;
+const COLORS = ['#e8732a','#58a6ff','#3dd68c','#f5a623','#c084fc','#fb7185','#22d3ee','#a3e635','#f97316','#8b5cf6'];
+const PRINT_COLORS = ['#c05a1a','#2d6dbe','#259958','#b07d00','#7842c8','#c03050','#0080a8','#5a8818'];
+
+let DB = {
+  orders:[], coils:[], carryovers:[], plans:[], customers:[], sheetStock:[], scalps:[],
+  nOid:1, nCid:1, nPid:1, nCustId:1, nSsid:1, nScid:1
+};
+const save = () => localStorage.setItem('ys_steel3', JSON.stringify(DB));
+const load = () => { const d=localStorage.getItem('ys_steel3'); if(d) try{DB=JSON.parse(d)}catch(e){} };
+
+const sw = (t,w,h) => t*w*h/1e6*DENSITY;
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const fd = (n,d=2) => (+n||0).toFixed(d);
+const today = () => new Date().toISOString().split('T')[0];
+const thisMonth = () => new Date().toISOString().slice(0,7);
+const docNo = (prefix) => prefix+'-'+new Date().toISOString().replace(/[-:.TZ]/g,'').slice(0,12);
+const nextMonth = (ym) => { if(!ym) return thisMonth(); const [y,m]=ym.split('-').map(Number); return m===12?`${y+1}-01`:`${y}-${String(m+1).padStart(2,'0')}`; };
+
+// ==============================
+// TABS
+// ==============================
+function goTab(t, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.tab').forEach(e=>{if(e.onclick&&e.onclick.toString().includes("'"+t+"'"))e.classList.add('active')});
+  const renders = {intake:()=>{renderOrders();updateMonthFilter()}, plan:renderPlan, workop:renderWorkop, invoice:renderInvoice, coils:()=>{renderCoils();renderSheetStock();renderScalps();}};
+  if(renders[t]) renders[t]();
+}
+
+// ==============================
+// PHOTO OCR
+// ==============================
+function handleDrop(ev) {
+  ev.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const f = ev.dataTransfer.files[0];
+  if(f) processFile(f);
+}
+function handleFile(inp) { if(inp.files[0]) processFile(inp.files[0]); }
+
+async function processFile(file) {
+  const resizeImage = (dataUrl, maxPx=1200) => new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
+    };
+    img.src = dataUrl;
+  });
+
+  const status = document.getElementById('ocr-status');
+  status.style.display='flex';
+
+  // HEIC 변환 처리 (아이폰 기본 포맷)
+  const isHeic = file.type === 'image/heic' || file.type === 'image/heif'
+    || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
+
+  let jpegFile = file;
+  if(isHeic && typeof heic2any !== 'undefined'){
+    status.innerHTML='<div class="ocr-loading"><div class="spinner"></div> HEIC → JPEG 변환 중...</div>';
+    try {
+      const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.88 });
+      jpegFile = new File([blob], file.name.replace(/\.heic$/i,'.jpg'), {type:'image/jpeg'});
+    } catch(e) {
+      status.innerHTML='<div class="ocr-loading"><div class="spinner"></div> 변환 생략, 원본 전송...</div>';
+    }
+  } else if(isHeic){
+    status.innerHTML='<div class="ocr-loading"><div class="spinner"></div> 이미지 처리 중...</div>';
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const original = e.target.result;
+    const mime = 'image/jpeg';
+
+    document.getElementById('photo-placeholder').style.display='none';
+    document.getElementById('photo-show').style.display='block';
+    document.getElementById('photo-show').innerHTML='<img src="'+original+'" class="photo-preview">';
+
+    status.innerHTML='<div class="ocr-loading"><div class="spinner"></div> 이미지 최적화 중...</div>';
+
+    const resized = await resizeImage(original, 1200);
+    const b64 = resized.split(',')[1];
+    status.innerHTML='<div class="ocr-loading"><div class="spinner"></div> 주문서 분석 중...</div>';
+
+    const prompt = '이것은 철강(냉연강판) 가공 주문서 또는 구매의뢰서 사진입니다.'
+      + '\n\n다음 형식의 주문서들이 올 수 있습니다:'
+      + '\n- 표 형식: 품목(차종명) | T(두께mm) | 가로(폭mm) | 세로(길이mm) | 수량(매 또는 장) | 중량kg'
+      + '\n- 구매의뢰서: NO | 품목 | 규격(두께×가로×세로) | 수량 | 비고'
+      + '\n- 수량 단위가 "매", "장", "t(톤)"으로 다를 수 있음'
+      + '\n- 같은 거래처의 여러 사이즈가 한 장에 있을 수 있음'
+      + '\n- 차종명(MO, YF, LF, N.F, 모닝, K5 등)은 note에 기록'
+      + '\n\n아래 JSON 형식으로만 응답하세요 (설명 없이 JSON만):'
+      + '\n{'
+      + '\n  "customer": "거래처명(수주처/발주처)",  '
+      + '\n  "month": "YYYY-MM (문서의 년월, 없으면 오늘 기준)",  '
+      + '\n  "due": "YYYY-MM-DD 또는 null",  '
+      + '\n  "items": ['
+      + '\n    {'
+      + '\n      "t": 두께숫자(mm단위, 예:1.0 또는 1.1),'
+      + '\n      "w": 가로폭숫자(mm),'
+      + '\n      "h": 세로길이숫자(mm),'
+      + '\n      "qty": 수량숫자(매/장 단위로 변환. 톤이면 null),'
+      + '\n      "qty_ton": 톤단위수량또는null,'
+      + '\n      "type": "판재",'
+      + '\n      "note": "차종명 또는 품목명"'
+      + '\n    }'
+      + '\n  ],'
+      + '\n  "note": "전체 특이사항"'
+      + '\n}'
+      + '\n\n규칙: 숫자는 단위 없이 숫자만. 빈 행은 제외. 불확실하면 null. 모든 행을 빠짐없이 추출.';
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          messages:[{
+            role:'user',
+            content:[
+              {type:'image', source:{type:'base64', media_type:mime, data:b64}},
+              {type:'text', text:prompt}
+            ]
+          }]
+        })
+      });
+      const data = await resp.json();
+      if(data.error){ throw new Error(data.error.message); }
+      const text = data.content.map(function(c){return c.text||'';}).join('');
+      const clean = text.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(clean);
+      showOCRResult(parsed);
+      status.style.display='none';
+    } catch(err) {
+      status.innerHTML='<span style="color:var(--red)">⚠ 자동 읽기 실패: '+err.message+' — 직접 입력해 주세요</span>';
+    }
+  };
+  reader.readAsDataURL(jpegFile);
+}
+
+// OCR 결과 표시 — 전체 품목 한 번에 확인·등록
+function showOCRResult(data) {
+  // OCR 결과 → bulk table에 직접 채우기
+  if(data.customer){
+    document.getElementById('i-cust').value = data.customer;
+    const mc = DB.customers.find(cu => cu.name===data.customer);
+    const ics = document.getElementById('i-cust-sel');
+    if(ics && mc) ics.value = mc.id;
+  }
+  if(data.month) document.getElementById('i-month').value = data.month;
+  if(data.due)   document.getElementById('i-due').value   = data.due;
+
+  if(data.items && data.items.length){
+    bulkRows = data.items.map(function(it, i){
+      return {id:Date.now()+i, t:it.t||'', w:it.w||'', h:it.h||'', qty:it.qty||'', type:it.type||'판재', note:it.note||''};
+    });
+    while(bulkRows.length < 3) bulkRows.push({id:Date.now()+bulkRows.length, t:'',w:'',h:'',qty:'',type:'판재',note:''});
+    renderBulkTable();
+  }
+
+  const div = document.getElementById('ocr-result');
+  div.style.display = 'block';
+  const cnt = (data.items||[]).filter(it=>it.t&&it.w&&it.h&&it.qty).length;
+  div.innerHTML = '<div style="background:rgba(61,214,140,.07);border:1px solid var(--green);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">'
+    + '<span style="color:var(--green);font-size:18px">✅</span>'
+    + '<div>'
+      + '<div style="font-weight:700;font-size:13px">인식 완료 — 아래 표에서 확인 후 등록하세요</div>'
+      + '<div style="font-size:12px;color:var(--muted)">'+(data.customer||'')+(data.month?' · '+data.month:'')+(data.due?' · 납기 '+data.due:'')+' · '+cnt+'개 항목</div>'
+    + '</div></div>';
+}
+
+function fillFromOCR(it) { /* bulk 방식으로 대체 */ }
+function bulkAddFromOCR(){ submitBulkOrders(); }
+function ocrCheckAll(v){}
+
+// ==============================
+// ORDERS
+// ==============================
+// ── bulk row table ──────────────────────────────────────────
+let bulkRows = [];
+
+function initBulkTable(){
+  bulkRows = [{id:Date.now(), t:'', w:'', h:'', qty:'', type:'판재', note:''}];
+  for(let i=1;i<5;i++) bulkRows.push({id:Date.now()+i, t:'', w:'', h:'', qty:'', type:'판재', note:''});
+  renderBulkTable();
+}
+
+function renderBulkTable(){
+  const tb = document.getElementById('bulk-tbody');
+  if(!tb) return;
+  tb.innerHTML = bulkRows.map(function(row, idx){
+    const isCoil = row.type === '코일';
+    // 중량 계산: 판재=계산식, 코일=입력값(row.qty를 코일 중량kg으로 사용)
+    const calcWt = isCoil
+      ? (row.qty ? +row.qty + 'kg' : '—')
+      : (row.t&&row.w&&row.h&&row.qty ? fd(+row.t * +row.w * +row.h / 1e6 * 7.85 * +row.qty, 1) + 'kg' : '—');
+    const wtColor = (isCoil ? row.qty : (row.t&&row.w&&row.h&&row.qty)) ? 'var(--accent)' : 'var(--muted)';
+
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      + '<td style="padding:4px 6px;text-align:center;color:var(--muted);font-size:12px;font-family:var(--mono)">'+(idx+1)+'</td>'
+      + '<td style="padding:3px 4px"><input type="number" step="0.1" placeholder="1.2" value="'+row.t+'" oninput="bulkRows['+idx+'].t=this.value;updateBulkCount()" style="width:60px;font-size:13px;text-align:right"></td>'
+      + '<td style="padding:3px 4px"><input type="number" placeholder="300" value="'+row.w+'" oninput="bulkRows['+idx+'].w=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>'
+      // 길이: 판재는 입력, 코일은 숨김
+      + (isCoil
+          ? '<td style="padding:3px 4px;color:var(--border);text-align:center;font-size:11px">—</td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="1000" value="'+row.h+'" oninput="bulkRows['+idx+'].h=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>')
+      // 장수(판재) or 주문중량kg(코일)
+      + (isCoil
+          ? '<td style="padding:3px 4px"><input type="number" placeholder="중량kg" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:72px;font-size:13px;text-align:right;background:rgba(88,166,255,.07);border-color:var(--blue)" title="코일 주문 중량(kg)"></td>'          : '<td style="padding:3px 4px"><input type="number" placeholder="100" value="'+row.qty+'" oninput="bulkRows['+idx+'].qty=this.value;updateBulkCount()" style="width:68px;font-size:13px;text-align:right"></td>')      + '<td style="padding:3px 4px"><select oninput="bulkRows['+idx+'].type=this.value;renderBulkTable()" style="font-size:12px;padding:4px 5px">'        + '<option value="판재"'+(row.type==='판재'?' selected':'')+'>판재</option>'        + '<option value="코일"'+(row.type==='코일'?' selected':'')+'>코일</option>'        + '</select></td>'      + '<td style="padding:3px 4px"><input type="text" placeholder="비고" value="'+row.note+'" oninput="bulkRows['+idx+'].note=this.value" style="width:80px;font-size:12px"></td>'      + '<td style="padding:3px 8px;text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap;color:'+wtColor+'">'+calcWt+'</td>'      + '<td style="padding:3px 6px;text-align:center">'        + '<button onclick="removeBulkRow('+idx+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1" title="삭제">×</button>'      + '</td>'      + '</tr>';
+  }).join('');
+  updateBulkStats();
+}
+
+function addBulkRow(){
+  bulkRows.push({id:Date.now(), t:'', w:'', h:'', qty:'', type:'판재', note:''});
+  renderBulkTable();
+  // scroll to bottom of table
+  const tb = document.getElementById('bulk-tbody');
+  if(tb) tb.lastElementChild && tb.lastElementChild.scrollIntoView({block:'nearest'});
+}
+
+function removeBulkRow(idx){
+  if(bulkRows.length <= 1) return;
+  bulkRows.splice(idx, 1);
+  renderBulkTable();
+}
+
+function updateBulkCount(){ updateBulkStats(); }
+function updateBulkStats(){
+  const filled = bulkRows.filter(r => r.t && r.w && (r.type==='코일' || (r.h && r.qty)));
+  const totalKg = filled.reduce((s,r) => {
+    if(r.type==='코일') return s + (+r.qty || 0); // 코일은 주문 중량 직접 입력
+    return s + (+r.t * +r.w * +r.h / 1e6 * 7.85 * +r.qty);
+  }, 0);
+  const el = document.getElementById('bulk-count');
+  if(!el) return;
+  if(!filled.length){ el.innerHTML=''; return; }
+  el.innerHTML = '<span style="color:var(--muted)">'
+    + filled.length+'개 입력'
+    + (totalKg > 0 ? ' · 총 <strong style="color:var(--accent)">' + fd(totalKg,1) + 'kg</strong>'
+        + ' <span style="color:var(--muted)">(' + fd(totalKg/1000,3) + 'ton)</span>' : '')
+    + '</span>';
+}
+
+function submitBulkOrders(){
+  const customer = document.getElementById('i-cust').value.trim();
+  const month    = document.getElementById('i-month').value || thisMonth();
+  const due      = document.getElementById('i-due').value;
+  if(!customer){ alert('거래처를 입력해 주세요.'); return; }
+  // 코일은 세로·장수 불필요, 판재는 필수
+  const valid = bulkRows.filter(r => {
+    if(!r.t || !r.w) return false;
+    if(r.type === '코일') return true;
+    return r.h && r.qty;
+  });
+  if(!valid.length){ alert('최소 1개 항목을 입력해 주세요.\n판재: 두께·폭·길이·장수 필수\n코일: 두께·폭만 필수'); return; }
+  valid.forEach(function(row){
+    DB.orders.push({
+      id: DB.nOid++, customer, month, due,
+      t: +row.t, w: +row.w,
+      h: row.type==='코일' ? 0 : +row.h,
+      qty: row.type==='코일' ? 0 : +row.qty,
+      price: 0, type: row.type, note: row.note.trim(),
+      status:'접수', created: today(), producible: null, confirmedQty: null
+    });
+  });
+  save(); renderOrders(); updateMonthFilter(); updateBadge();
+  alert(valid.length+'개 주문이 등록됐습니다!');
+  clearBulkForm();
+}
+
+function clearBulkForm(){
+  document.getElementById('i-cust').value = '';
+  document.getElementById('i-month').value = thisMonth();
+  document.getElementById('i-due').value = '';
+  const sel = document.getElementById('i-cust-sel'); if(sel) sel.value='';
+  initBulkTable();
+}
+
+function addOrder(){} // legacy stub — bulk 방식으로 대체
+function clearForm(){ clearBulkForm(); }
+
+function updateMonthFilter(){
+  const months=[...new Set(DB.orders.map(o=>o.month))].sort().reverse();
+  const sel=document.getElementById('filter-month');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">전체 월</option>'+months.map(m=>`<option ${m===cur?'selected':''}>${m}</option>`).join('');
+}
+
+function renderOrders(){
+  const tb=document.getElementById('order-tbody');
+  const fm=document.getElementById('filter-month')?.value||'';
+  const fs=document.getElementById('filter-status')?.value||'';
+  let list=DB.orders.filter(o=>(fm?o.month===fm:true)&&(fs?o.status===fs:true));
+  if(!list.length){ tb.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--muted)">주문이 없습니다</td></tr>`; return; }
+  const sc={접수:'orange',계획중:'blue',가공중:'purple',완료:'green'};
+  tb.innerHTML=list.map((o,i)=>{
+    const shw=sw(o.t,o.w,o.h), totKg=shw*o.qty;
+    return `<tr>
+      <td><input type="checkbox" class="ochk" data-id="${o.id}" onchange="checkBatch()" style="accent-color:var(--accent)"></td>
+      <td class="text-m mono">${i+1}</td>
+      <td><strong>${o.customer}</strong></td>
+      <td class="mono">${o.month}</td>
+      <td class="num">${o.t}t</td>
+      <td class="num">${fmt(o.w)}×${fmt(o.h)}</td>
+      <td class="num">${fmt(o.qty)}장<br><span class="fs11 text-m">${fd(totKg/1000,3)}t</span></td>
+      <td><span class="badge b-${o.type==='코일'?'blue':'orange'}">${o.type}</span></td>
+      <td class="num">${o.price?fmt(o.price)+'원':'-'}</td>
+      <td class="text-m fs12">${o.due||'-'}</td>
+      <td><span class="badge b-${sc[o.status]||'orange'}">${o.status}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="delOrder(${o.id})">삭제</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function delOrder(id){ DB.orders=DB.orders.filter(o=>o.id!==id); save(); renderOrders(); updateBadge(); }
+function getChkIds(){ return Array.from(document.querySelectorAll('.ochk:checked')).map(c=>+c.dataset.id); }
+function checkBatch(){ document.getElementById('batch-actions').style.display=getChkIds().length?'flex':'none'; }
+function toggleAll(cb){ document.querySelectorAll('.ochk').forEach(c=>c.checked=cb.checked); checkBatch(); }
+function batchStatus(s){ getChkIds().forEach(id=>{const o=DB.orders.find(x=>x.id===id);if(o)o.status=s;}); save();renderOrders();updateBadge(); }
+function batchDelete(){ if(!confirm('삭제?'))return; const ids=getChkIds(); DB.orders=DB.orders.filter(o=>!ids.includes(o.id)); save();renderOrders();updateBadge(); }
+function updateBadge(){ document.getElementById('dot-plan').classList.toggle('show', DB.orders.some(o=>o.status==='접수')); document.getElementById('dot-co').classList.toggle('show', DB.orders.some(o=>o.status==='가공중'||o.status==='계획중'));
+  document.getElementById('dot-del').classList.toggle('show', DB.orders.some(o=>o.status==='가공중')); }
+
+// ==============================
+// PRODUCTION PLAN
+// ==============================
+
+function renderPlan(){
+  renderPlanOrders();
+  renderPlanCoils();
+}
+
+let planOrderIds = [];
+let planCoilIds  = [];
+let lastPlanResult = null;
+
+function renderPlanOrders(){
+  const pending = DB.orders.filter(o => o.status !== '완료');
+  const ol = document.getElementById('plan-order-list');
+  if(!pending.length){ ol.innerHTML='<div class="text-m">접수된 주문이 없습니다.</div>'; return; }
+  const byCustomer = {};
+  pending.forEach(function(o){
+    if(!byCustomer[o.customer]) byCustomer[o.customer]=[];
+    byCustomer[o.customer].push(o);
+  });
+  let html = '';
+  Object.entries(byCustomer).forEach(function(entry){
+    const cust=entry[0], ords=entry[1];
+    html+='<div style="margin-bottom:14px">';
+    html+='<div class="fs12 fw7 text-m" style="margin-bottom:6px;display:flex;align-items:center;gap:8px"><span>'+cust+'</span>'
+      +'<button onclick="selectAllCustomer('+JSON.stringify(ords.map(o=>o.id))+')" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px">전체선택</button></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    ords.forEach(function(o){
+      const sel=planOrderIds.includes(o.id);
+      const shw=sw(o.t,o.w,o.h);
+      html+='<label style="display:flex;align-items:flex-start;gap:8px;background:'+(sel?'rgba(232,115,42,.1)':'var(--surface)')+';border:2px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;padding:10px;cursor:pointer;min-width:190px;transition:all .15s">'
+        +'<input type="checkbox" class="plan-ochk" data-id="'+o.id+'" '+(sel?'checked':'')+' onchange="togglePlanOrder('+o.id+')" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0">'
+        +'<div>'
+        +'<div class="mono fw7" style="font-size:13px">'+o.t+'t × <span style="color:var(--accent)">'+o.w+'mm</span></div>'
+        +'<div class="mono fs12 text-m">세로 '+fmt(o.h)+'mm</div>'
+        +'<div class="mono fs12">'+fmt(o.qty)+'장 · '+fd(shw*o.qty/1000,3)+'t</div>'
+        +'<span class="badge b-'+(o.type==='코일'?'blue':'orange')+'" style="font-size:10px;margin-top:4px;display:inline-block">'+o.type+'</span>'
+        +'</div></label>';
+    });
+    html+='</div></div>';
+  });
+  ol.innerHTML=html;
+}
+
+function togglePlanOrder(id){
+  const idx=planOrderIds.indexOf(id);
+  if(idx>=0) planOrderIds.splice(idx,1); else planOrderIds.push(id);
+  renderPlanOrders(); renderPlanCoils();
+  document.getElementById('plan-result').style.display='none';
+}
+
+function selectAllCustomer(ids){
+  ids.forEach(function(id){ if(!planOrderIds.includes(id)) planOrderIds.push(id); });
+  renderPlanOrders(); renderPlanCoils();
+}
+
+function renderPlanCoils(){
+  const selOrders=DB.orders.filter(o=>planOrderIds.includes(o.id));
+  const thicknesses=[...new Set(selOrders.map(o=>o.t))];
+  const alive=DB.coils.filter(c=>c.remaining>0);
+  const cl=document.getElementById('plan-coil-list');
+  if(!alive.length){ cl.innerHTML='<div class="text-m">재고 탭에서 코일을 먼저 등록해 주세요.</div>'; return; }
+  const match=thicknesses.length?alive.filter(c=>thicknesses.some(t=>Math.abs(c.t-t)<0.001)):alive;
+  const other=thicknesses.length?alive.filter(c=>!thicknesses.some(t=>Math.abs(c.t-t)<0.001)):[];
+  function card(c,dim){
+    const pct=c.remaining/c.weight*100, L=coilLen(c), sel=planCoilIds.includes(c.id);
+    return '<label style="display:flex;align-items:flex-start;gap:8px;background:'+(sel?'rgba(232,115,42,.08)':'var(--surface)')+';border:2px solid '+(sel?'var(--accent)':'var(--border)')+';border-radius:8px;padding:11px;cursor:pointer;opacity:'+(dim&&!sel?'.45':'1')+';transition:all .15s;min-width:220px">'
+      +'<input type="checkbox" class="plan-cchk" data-id="'+c.id+'" '+(sel?'checked':'')+' onchange="togglePlanCoil('+c.id+')" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="mono fw7 text-a">'+c.t+'t × '+fmt(c.w)+'mm</div>'
+      +'<div class="fs12 text-m">'+(c.no||'번호없음')+(c.supplier?' · '+c.supplier:'')+(c.price?' · '+fmt(c.price)+'원/kg':'')+'</div>'
+      +'<div class="mono fs12">잔여 '+fmt(c.remaining)+'kg · 약 '+fd(coilLen(c)*c.remaining/c.weight,0)+'m</div>'
+      +'<div class="wbar" style="margin-top:5px"><div class="wfill" style="width:'+pct+'%"></div></div>'
+      +'</div></label>';
+  }
+  let html='<div style="display:flex;flex-wrap:wrap;gap:10px">';
+  match.forEach(function(c){ html+=card(c,false); });
+  if(other.length){ html+='<div style="width:100%;font-size:12px;color:var(--muted);margin-top:4px">── 두께 불일치 ──</div>'; other.forEach(function(c){ html+=card(c,true); }); }
+  cl.innerHTML=html+'</div>';
+}
+
+function togglePlanCoil(id){
+  const idx=planCoilIds.indexOf(id);
+  if(idx>=0) planCoilIds.splice(idx,1); else planCoilIds.push(id);
+  renderPlanCoils();
+  document.getElementById('plan-result').style.display='none';
+}
+
+function coilLen(c){ return c.weight/(c.t/1000*c.w/1000*7850); }
+
+function runPlan(){
+  if(!planOrderIds.length){ alert('주문을 선택해 주세요.'); return; }
+  if(!planCoilIds.length){ alert('코일을 선택해 주세요.'); return; }
+  const orders=DB.orders.filter(o=>planOrderIds.includes(o.id));
+  const coils=DB.coils.filter(c=>planCoilIds.includes(c.id));
+  const coil=coils[0];
+  const W=coil.w, usableW=W-10, L=coilLen(coil);
+  const colorMap={};
+  let ci2=0;
+  const widthItems=[];
+  orders.forEach(function(o){
+    if(!colorMap[o.w]) colorMap[o.w]=COLORS[ci2++%COLORS.length];
+    const ex=widthItems.find(x=>x.w===o.w);
+    if(ex){ ex.qty+=o.qty; ex.orders.push(o); }
+    else widthItems.push({w:o.w,qty:o.qty,orders:[o],color:colorMap[o.w]});
+  });
+  widthItems.sort((a,b)=>b.w-a.w);
+
+  // Cutting stock optimizer
+  const patterns=[];
+  function gen(rem,idx,cur){
+    if(cur.length>0) patterns.push({strips:[...cur],trim:rem});
+    if(patterns.length>4000)return;
+    for(let i=idx;i<widthItems.length;i++){
+      if(rem>=widthItems[i].w){ cur.push(widthItems[i]); gen(rem-widthItems[i].w,i,cur); cur.pop(); }
+    }
+  }
+  gen(usableW,0,[]);
+  const seen2=new Set(); const unique=[];
+  patterns.forEach(function(p){ const k=p.strips.map(s=>s.w).sort().join(','); if(!seen2.has(k)){seen2.add(k);unique.push(p);} });
+  function scoreP(p){
+    const cov=new Set(p.strips.map(s=>s.w));
+    return ((usableW-p.trim)/usableW)*0.65+(widthItems.filter(u=>cov.has(u.w)).length/widthItems.length)*0.35;
+  }
+  unique.sort((a,b)=>scoreP(b)-scoreP(a));
+  let best=unique[0];
+  if(!best){ const w=widthItems[0].w,n=Math.floor(usableW/w); best={strips:Array(n).fill(widthItems[0]),trim:usableW-n*w}; }
+
+  const p1cnt={}; best.strips.forEach(s=>p1cnt[s.w]=(p1cnt[s.w]||0)+1);
+  const pass2=null, p2cnt={};
+
+  const itemResults=widthItems.map(function(item){
+    const p1n=p1cnt[item.w]||0;
+    const h=item.orders[0].h;
+    const sps=item.orders[0].type==='판재'&&h?Math.floor(L*1000/h):null;
+    const prodPC=sps?p1n*sps:p1n;
+    const totalQty=item.orders.reduce((s,o)=>s+o.qty,0);
+    const cn=prodPC>0?Math.ceil(totalQty/prodPC):'?';
+    const prod=prodPC>0?prodPC*(typeof cn==='number'?cn:1):0;
+    return {item,p1n,sheetsPerStrip:sps,produciblePerCoil:prodPC,producible:prod,totalQty,coilsNeeded:cn,diff:prod-totalQty};
+  });
+
+  lastPlanResult={orders,coil,coils,bestPattern:best,usableW,W,L,itemResults,colorMap,p1cnt};
+  renderPlanResult();
+}
+
+function renderPlanResult(){
+  const {bestPattern,usableW,W,L,itemResults,colorMap}=lastPlanResult;
+  const res=document.getElementById('plan-result');
+  res.style.display='block';
+  const util=((usableW-bestPattern.trim)/usableW*100).toFixed(1);
+
+  function makeBar(strips,totalW,trim){
+    let bar='';
+    strips.forEach(function(s,i){
+      const pct=(s.w/totalW*100).toFixed(2);
+      bar+='<div class="pat-strip" style="width:'+pct+'%;background:'+(s.color||colorMap[s.w]||'#888')+'">'
+        +'<span style="font-size:10px">'+s.w+'</span>'
+        +'<div class="tip">'+s.w+'mm</div></div>';
+      if(i<strips.length-1) bar+='<div class="kerf-div" style="width:1px"></div>';
+    });
+    if(trim>0) bar+='<div class="pat-strip loss-strip" style="width:'+(trim/totalW*100).toFixed(2)+'%"><span style="font-size:9px">LOSS '+trim+'mm</span></div>';
+    return bar;
+  }
+
+  const p1strips=bestPattern.strips.map(s=>({...s,color:colorMap[s.w]||'#888'}));
+  const p1bar=makeBar(p1strips,W,bestPattern.trim+5);
+  const p2html='';
+
+  let tableRows='',anyOver=false,anyShort=false;
+  itemResults.forEach(function(r){
+    const names=[...new Set(r.item.orders.map(o=>o.customer))].join(', ');
+    const passInfo=r.p1n+'줄';
+    const diffColor=r.diff>0?'var(--green)':r.diff<0?'var(--red)':'var(--muted)';
+    const diffStr=r.diff>0?'+'+fmt(r.diff)+'장(이월)':r.diff<0?'-'+fmt(Math.abs(r.diff))+'장(부족)':'일치';
+    if(r.diff>0)anyOver=true; if(r.diff<0)anyShort=true;
+    tableRows+='<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:'+r.item.color+';flex-shrink:0"></div>'+r.item.w+'mm</div></td>'
+      +'<td>'+names+'</td>'
+      +'<td class="num mono">'+fmt(r.totalQty)+'장</td>'
+      +'<td class="mono text-m" style="font-size:12px">'+passInfo+'</td>'
+      +'<td class="num mono">'+(r.sheetsPerStrip!=null?r.sheetsPerStrip+'장':'—')+'</td>'
+      +'<td class="num mono text-a">'+fmt(r.produciblePerCoil)+(r.item.orders[0].type==='코일'?'줄':'장')+'/코일</td>'
+      +'<td class="num mono fw7">'+r.coilsNeeded+'개</td>'
+      +'<td class="num mono" style="color:'+diffColor+'">'+diffStr+'</td>'
+      +'</tr>';
+  });
+
+  const maxCoils=Math.max(...itemResults.map(r=>typeof r.coilsNeeded==='number'?r.coilsNeeded:1));
+  const selCoils=planCoilIds.length;
+
+  res.innerHTML='<div class="card">'
+    +'<div class="card-title">③ 생산 계획 결과</div>'
+    +'<div style="background:var(--surface);border-radius:8px;padding:14px;margin-bottom:12px">'
+      +'<div class="fs12 fw7" style="margin-bottom:8px">✂️ 1차 슬리팅 패턴</div>'
+      +'<div class="pat-bar">'+p1bar+'</div>'
+      +'<div class="mono fs11 text-m" style="margin-top:6px">코일 '+W+'mm − 에지10mm = 유효 '+usableW+'mm | 이용률 '+util+'% | 로스 '+bestPattern.trim+'mm</div>'
+      +p2html
+    +'</div>'
+    +'<div class="fs12 fw7" style="margin-bottom:8px">📦 아이템별 생산량</div>'
+    +'<div class="tbl-wrap" style="margin-bottom:12px"><table><thead><tr>'
+    +'<th>폭</th><th>거래처</th><th>주문량</th><th>줄 수</th><th>줄당 장수</th><th>코일당 생산</th><th>필요 코일</th><th>과잉/부족</th>'
+    +'</tr></thead><tbody>'+tableRows+'</tbody></table></div>'
+    +'<div style="background:rgba(232,115,42,.08);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">'
+      +'<span class="fw7">📌 코일 소요: </span>'
+      +'<span class="mono fw7 text-a" style="font-size:16px">최소 '+maxCoils+'개</span>'
+      +' <span class="text-m fs12">(선택 '+selCoils+'개 / 필요 '+maxCoils+'개'+(selCoils<maxCoils?' → <span style="color:var(--red)">코일 '+Math.max(0,maxCoils-selCoils)+'개 부족</span>':' ✓')+')</span>'
+    +'</div>'
+    +(anyOver?'<div style="background:rgba(61,214,140,.07);border:1px solid var(--green);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px">📦 <strong>과잉분</strong>은 거래명세서에서 이월 처리하세요.</div>':'')
+    +(anyShort?'<div style="background:rgba(249,108,108,.07);border:1px solid var(--red);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px">⚠ <strong>부족분</strong>: 코일 추가 또는 거래처 수량 조정 필요</div>':'')
+    +'<div class="flex gap8 flex-wrap">'
+      +'<button class="btn btn-primary" onclick="genConfirmDoc()">📄 거래처 확인서</button>'
+      +'<button class="btn btn-blue" onclick="confirmPlan()">✅ 확정 → 가공 지시</button>'
+    +'</div></div>';
+}
+
+function confirmPlan(){
+  if(!lastPlanResult)return;
+  const {orders,coil,itemResults}=lastPlanResult;
+  // 슬리팅 로스 정보 (참고용 — 스캘프 등록은 재고탭에서 직접)
+  const {bestPattern, usableW, W, L} = lastPlanResult;
+  const trimMm = bestPattern ? bestPattern.trim : 0;
+
+  orders.forEach(function(o){
+    const r=itemResults.find(r=>r.item.orders.some(io=>io.id===o.id));
+    o.status='계획중';
+    o.producible=r?r.producible:o.qty;
+    o.confirmedQty=Math.min(o.producible,o.qty);
+    o.planCoilId=coil.id;
+  });
+  save(); renderPlan(); updateBadge();
+  // 슬리팅 로스 안내 (35mm 이상이면 스캘프 등록 참고)
+  const scalpHint = trimMm >= 35
+    ? '\n※ 슬리팅 로스 ' + trimMm + 'mm — 재고탭 > 스캘프에서 직접 등록하세요'
+    : '';
+  alert('확정!' + scalpHint + '\n가공 지시 탭에서 지시서를 출력하세요.');
+}
+
+
+function genConfirmDoc(){
+  if(!lastPlanResult)return;
+  const {order,coil,nStrips,trimMm,producible,unit,diff,isOver,isShort,L,usableW,EDGE,prodKg,orderKg}=lastPlanResult;
+  const W=coil.w;
+  const html=`<div class="doc">
+    <div class="doc-title">생 산 확 인 서</div>
+    <div style="text-align:center;font-size:12px;color:#666;margin:-12px 0 16px">Production Quantity Confirmation</div>
+    <div class="doc-grid">
+      <div class="doc-cell"><div class="doc-label">문서 번호</div><div class="doc-val">${docNo('PC')}</div></div>
+      <div class="doc-cell"><div class="doc-label">작성일</div><div class="doc-val">${today()}</div></div>
+      <div class="doc-cell"><div class="doc-label">거래처</div><div class="doc-val">${order.customer}</div></div>
+      <div class="doc-cell"><div class="doc-label">주문 년월</div><div class="doc-val">${order.month}</div></div>
+    </div>
+    <table class="doc-table">
+      <thead><tr><th>항목</th><th>규격</th><th>주문 수량</th><th>생산 가능량</th><th>납품 예정</th><th>이월</th></tr></thead>
+      <tbody><tr>
+        <td>${order.t}t ${order.type}</td>
+        <td>${order.w}mm × ${order.h}mm</td>
+        <td>${fmt(order.qty)}장</td>
+        <td style="font-weight:700;color:${isOver?'#2a8a5a':'#c03030'}">${fmt(producible)}${unit}</td>
+        <td style="font-weight:700">${fmt(Math.min(producible,order.qty))}장</td>
+        <td>${isOver?fmt(diff)+'장 ('+nextMonth(order.month)+'로 이월)':'—'}</td>
+      </tr></tbody>
+    </table>
+    <div style="background:#fff9f0;border:1px solid #e0b070;border-radius:4px;padding:12px;font-size:12px;margin-bottom:16px">
+      <strong>안내 사항:</strong> 코일(${coil.t}t×${W}mm) 특성상 정확한 수량 생산이 어려워 ${isOver?`주문량(${fmt(order.qty)}장) 대비 ${fmt(diff)}장이 초과 생산됩니다. 초과분은 ${nextMonth(order.month)} 주문으로 이월 처리됩니다.`:isShort?`주문량(${fmt(order.qty)}장) 대비 ${fmt(Math.abs(diff))}장이 부족합니다. 협의 부탁드립니다.`:'주문량과 생산 가능량이 일치합니다.'} <br>상기 내용에 동의하시면 아래 서명 부탁드립니다.
+    </div>
+    <div class="doc-sign">
+      <div class="doc-sign-c" style="border-right:1px solid #ccc;padding:36px 12px 10px">영성강업 (공급)<br><br><div style="border-top:1px solid #999;margin-top:8px;padding-top:6px;font-weight:700">확인</div></div>
+      <div class="doc-sign-c" style="border-right:1px solid #ccc;padding:36px 12px 10px">${order.customer} (수요)<br><br><div style="border-top:1px solid #999;margin-top:8px;padding-top:6px;font-weight:700">확인</div></div>
+      <div class="doc-sign-c" style="padding:36px 12px 10px">날짜<br><br><div style="border-top:1px solid #999;margin-top:8px;padding-top:6px;font-weight:700">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
+    </div>
+    <div style="margin-top:12px;font-size:10px;color:#aaa;text-align:center">영성강업 · ${today()}</div>
+  </div>`;
+  printDoc(html, '생산확인서');
+}
+
+// ==============================
+// PROCESS DOCS
+// ==============================
+function renderProcess(){
+  const confirmed=DB.orders.filter(o=>o.status==='계획중'||o.status==='가공중');
+  const container=document.getElementById('process-order-list');
+  if(!confirmed.length){ container.innerHTML='<div class="text-m">확정된 주문이 없습니다. 생산 계획 탭에서 확정해 주세요.</div>'; return; }
+  container.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">`+
+    confirmed.map(o=>`<label style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer">
+      <input type="checkbox" class="pchk" data-id="${o.id}" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0">
+      <div>
+        <div class="fw7">${o.customer}</div>
+        <div class="mono text-m fs12">${o.t}t × ${o.w}mm × ${o.h}mm</div>
+        <div class="mono fs12">확정 ${fmt(o.confirmedQty||o.qty)}장 · <span class="badge b-${o.type==='코일'?'blue':'orange'}" style="font-size:10px">${o.type}</span></div>
+      </div>
+    </label>`).join('')+'</div>';
+}
+
+function genProcessDocs(){
+  const ids=Array.from(document.querySelectorAll('.pchk:checked')).map(c=>+c.dataset.id);
+  if(!ids.length){ alert('주문을 선택해 주세요.'); return; }
+  const orders=ids.map(id=>DB.orders.find(o=>o.id===id)).filter(Boolean);
+  const coil=(id=>DB.coils.find(c=>c.id===id))(orders[0]?.planCoilId);
+  const EDGE=10;
+
+  let html='';
+  orders.forEach(o=>{
+    const W=coil?coil.w:1204;
+    const usableW=W-EDGE;
+    const nStrips=Math.floor(usableW/o.w);
+    const trimMm=usableW-nStrips*o.w;
+    const confirmedQty=o.confirmedQty||o.qty;
+    const L=coil?coilLen(coil):0;
+    const sheetsPerStrip=L&&o.h?Math.floor(L*1000/o.h):'-';
+    const coilsNeeded=sheetsPerStrip!=='-'?Math.ceil(confirmedQty/(nStrips*sheetsPerStrip)):'-';
+
+    // Pattern bar print
+    let docBar='';
+    for(let i=0;i<nStrips;i++){
+      const pct=(o.w/W*100).toFixed(2);
+      docBar+=`<div class="doc-ps" style="width:${pct}%;background:${PRINT_COLORS[0]}">${o.w}</div>`;
+      if(i<nStrips-1) docBar+=`<div style="width:1px;background:#444;height:100%;min-width:1px"></div>`;
+    }
+    if(trimMm>0) docBar+=`<div class="doc-ps doc-loss" style="width:${(trimMm/W*100).toFixed(2)}%">LOSS</div>`;
+
+    // ---- SLITTING ORDER ----
+    html+=`<div class="doc" style="margin-bottom:24px;border:1px solid #ccc;border-radius:8px">
+      <div class="doc-title">슬 리 팅 지 시 서</div>
+      <div class="doc-grid">
+        <div class="doc-cell"><div class="doc-label">지시서 번호</div><div class="doc-val">${docNo('SL')}</div></div>
+        <div class="doc-cell"><div class="doc-label">작업일</div><div class="doc-val">${today()}</div></div>
+        <div class="doc-cell"><div class="doc-label">원코일 규격</div><div class="doc-val">${coil?coil.t+'t × '+fmt(coil.w)+'mm':'—'}</div></div>
+        <div class="doc-cell"><div class="doc-label">코일 번호</div><div class="doc-val">${coil?.no||'—'}</div></div>
+        <div class="doc-cell"><div class="doc-label">납품처</div><div class="doc-val">${o.customer}</div></div>
+        <div class="doc-cell"><div class="doc-label">이용률 / 로스</div><div class="doc-val">${fd((W-trimMm)/W*100,1)}% / ${fd(trimMm,1)}mm</div></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px">▶ 슬리팅 패턴</div>
+      <div class="doc-pat">${docBar}</div>
+      <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:12px">코일폭 ${W}mm - 에지${EDGE}mm = 유효 ${usableW}mm | ${o.w}mm × ${nStrips}줄 | 로스 ${fd(trimMm,1)}mm</div>
+      <table class="doc-table">
+        <thead><tr><th>순번</th><th>슬리팅 폭</th><th>줄수</th><th>납품처</th><th>코일 번호(출력용)</th><th>작업자 확인</th></tr></thead>
+        <tbody><tr>
+          <td>1</td><td style="font-weight:700">${o.w}mm</td><td>${nStrips}줄</td>
+          <td>${o.customer}</td><td style="min-width:80px"></td><td style="min-width:60px"></td>
+        </tr></tbody>
+      </table>
+      <div class="doc-sign">
+        <div class="doc-sign-c">작&nbsp;성</div>
+        <div class="doc-sign-c">검&nbsp;토</div>
+        <div class="doc-sign-c">작업자 확인</div>
+      </div>
+    </div>`;
+
+    // ---- SHEARING ORDER (판재만) ----
+    if(o.type==='판재'){
+      const sheetWkg=sw(o.t,o.w,o.h);
+      html+=`<div class="doc" style="margin-bottom:24px;border:1px solid #ccc;border-radius:8px">
+        <div class="doc-title">전 단 지 시 서 (미니쉐)</div>
+        <div style="text-align:center;font-size:11px;color:#888;margin:-12px 0 14px">슬리팅 완료 후 작업</div>
+        <div class="doc-grid">
+          <div class="doc-cell"><div class="doc-label">지시서 번호</div><div class="doc-val">${docNo('SH')}</div></div>
+          <div class="doc-cell"><div class="doc-label">작업일</div><div class="doc-val">${today()}</div></div>
+          <div class="doc-cell"><div class="doc-label">납품처</div><div class="doc-val">${o.customer}</div></div>
+          <div class="doc-cell"><div class="doc-label">두께</div><div class="doc-val">${o.t}t</div></div>
+        </div>
+        <table class="doc-table">
+          <thead><tr><th>납품처</th><th>슬리팅 폭</th><th>절단 길이</th><th>줄수</th><th>줄당 장수</th><th>납품 장수</th><th>1장 무게</th><th>총 중량</th><th>확인</th></tr></thead>
+          <tbody><tr>
+            <td class="left">${o.customer}</td>
+            <td style="font-weight:700">${o.w}mm</td>
+            <td style="font-weight:700">${o.h}mm</td>
+            <td>${nStrips}줄</td>
+            <td>${sheetsPerStrip}</td>
+            <td style="font-weight:700">${fmt(confirmedQty)}장</td>
+            <td>${fd(sheetWkg,3)}kg</td>
+            <td style="font-weight:700">${fd(sheetWkg*confirmedQty/1000,3)}ton</td>
+            <td style="min-width:50px"></td>
+          </tr></tbody>
+        </table>
+        <div style="background:#f0f8ff;border:1px solid #a0c8e8;border-radius:4px;padding:10px;font-size:11px;margin-bottom:12px">
+          <strong>작업 순서:</strong> 슬리팅 완료된 ${o.w}mm 코일을 미니쉐에 걸어 ${o.h}mm 길이로 절단 → ${nStrips}줄 동시 또는 순차 작업
+        </div>
+        <div class="doc-sign">
+          <div class="doc-sign-c">작&nbsp;성</div>
+          <div class="doc-sign-c">검&nbsp;토</div>
+          <div class="doc-sign-c">작업자 확인</div>
+        </div>
+      </div>`;
+    }
+  });
+
+  document.getElementById('process-docs').innerHTML=`
+    <div class="flex gap8 mb12 no-print" style="margin-bottom:12px">
+      <button class="btn btn-green" onclick="printProcessDocs()">🖨️ 전체 인쇄</button>
+    </div>
+    <div id="process-doc-content">${html}</div>`;
+
+  orders.forEach(o=>{ const ord=DB.orders.find(x=>x.id===o.id); if(ord)ord.status='가공중'; });
+  save(); renderProcess();
+}
+
+function printProcessDocs(){
+  const content=document.getElementById('process-doc-content').innerHTML;
+  printDoc(content, '가공지시서');
+}
+
+// ==============================
+// CARRYOVER
+// ==============================
+// ==============================
+// INVOICE (거래명세서)
+// ==============================
+function saveSupplier(){
+  const s={
+    name:document.getElementById('sup-name').value,
+    rep:document.getElementById('sup-rep').value,
+    biz:document.getElementById('sup-biz').value,
+    tel:document.getElementById('sup-tel').value,
+    addr:document.getElementById('sup-addr').value
+  };
+  localStorage.setItem('supplier',JSON.stringify(s));
+}
+function loadSupplier(){
+  try{
+    const d=JSON.parse(localStorage.getItem('supplier')||'{}');
+    ['name','rep','biz','tel','addr'].forEach(k=>{
+      const el=document.getElementById('sup-'+k);
+      if(el&&d[k]) el.value=d[k];
+    });
+  }catch(e){}
+}
+
+function renderInvoice(){
+  loadSupplier();
+  refreshCustomerSelects();
+  const eligible=DB.orders.filter(o=>o.status==='계획중'||o.status==='가공중'||o.status==='완료');
+  const container=document.getElementById('inv-order-list');
+  if(!eligible.length){
+    container.innerHTML='<div class="text-m">계획 확정 또는 가공 완료된 주문이 없습니다.</div>';
+    return;
+  }
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">';
+  eligible.forEach(o=>{
+    const shw=sw(o.t,o.w,o.h);
+    const prodQty=o.producible||o.qty;
+    html+='<label style="display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer">'
+      +'<input type="checkbox" class="invchk" data-id="'+o.id+'" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0;margin-top:2px">'
+      +'<div><div class="fw7">'+o.customer+'</div>'
+      +'<div class="mono text-m fs12">'+o.t+'t × '+o.w+'mm × '+o.h+'mm</div>'
+      +'<div class="mono fs12">주문 '+fmt(o.qty)+'장 / 생산가능 <span class="text-a">'+fmt(prodQty)+'장</span></div>'
+      +'<div class="fs12 text-m">'+o.month+(o.due?' · 납기 '+o.due:'')+'</div>'
+      +'</div></label>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function buildInvoice(){
+  const ids=Array.from(document.querySelectorAll('.invchk:checked')).map(c=>+c.dataset.id);
+  if(!ids.length){alert('주문을 선택해 주세요.');return;}
+  const orders=ids.map(id=>DB.orders.find(o=>o.id===id)).filter(Boolean);
+
+  // Group by customer
+  const byCustomer={};
+  orders.forEach(o=>{
+    if(!byCustomer[o.customer]) byCustomer[o.customer]=[];
+    byCustomer[o.customer].push(o);
+  });
+
+  let html='<div class="card"><div class="card-title">② 수량 확정 · 판매단가 · 이월 설정</div>';
+  Object.entries(byCustomer).forEach(function(entry){
+    const customer=entry[0], ords=entry[1];
+    html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">';
+    html+='<div class="fw7" style="margin-bottom:12px;font-size:14px;color:var(--accent)">'+customer+'</div>';
+    html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html+='<thead><tr style="border-bottom:2px solid var(--border)">';
+    ['규격','주문량','생산가능량','판매단가(원/kg)','이번달 청구량','이월 수량 (선택)','이월 년월 (선택)'].forEach(function(h){
+      html+='<th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap">'+h+'</th>';
+    });
+    html+='</tr></thead><tbody>';
+    ords.forEach(function(o){
+      const prodQty=o.producible||o.qty;
+      const diff=prodQty-o.qty;
+      const isOver=diff>0;
+      html+='<tr style="border-bottom:1px solid var(--border)">';
+      html+='<td style="padding:8px 10px;font-family:var(--mono);font-size:12px">'+o.t+'t × '+o.w+'mm × '+o.h+'mm</td>';
+      html+='<td style="padding:8px 10px;text-align:right;font-family:var(--mono)">'+fmt(o.qty)+'장</td>';
+      html+='<td style="padding:8px 10px;text-align:right;font-family:var(--mono);color:var(--accent)">'+fmt(prodQty)+'장</td>';
+      html+='<td style="padding:8px 10px"><input type="number" class="inv-price" data-oid="'+o.id+'" placeholder="예) 1200" style="width:100px;font-size:13px" oninput="calcInvProfit()"></td>';
+      html+='<td style="padding:8px 10px"><input type="number" class="inv-bill-qty" data-oid="'+o.id+'" data-prod="'+prodQty+'" value="'+Math.min(prodQty,o.qty)+'" min="0" max="'+prodQty+'" style="width:90px;font-size:13px" oninput="syncCarryQty(this)"></td>';
+      html+='<td style="padding:8px 10px"><span class="inv-carry-qty" id="carry-'+o.id+'" style="font-family:var(--mono);color:var(--green)">'+(isOver?fmt(diff):'0')+'장</span></td>';
+      html+='<td style="padding:8px 10px"><input type="month" class="inv-carry-month" data-oid="'+o.id+'" value="'+nextMonth(o.month)+'" style="width:130px;font-size:12px;'+(isOver?'':'opacity:.4')+'" '+(isOver?'':'disabled')+'></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div></div>';
+  });
+  html+='<div class="mt12 flex gap8">';
+  html+='<button class="btn btn-primary" onclick="printInvoice()">🖨️ 거래명세서 출력</button>';
+  html+='</div></div>';
+
+  // 내부 수익 계산 카드 (고객 미출력)
+  html+='<div class="card" style="border-color:rgba(61,214,140,.3)">';
+  html+='<div class="card-title" style="color:var(--green)">💹 내부 원가·수익 계산 <span style="font-weight:400;font-size:11px;color:var(--muted);text-transform:none">(고객 출력 제외)</span></div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px">';
+  html+='<div class="fg"><label>원자재 단가 (원/kg)</label><input type="number" id="ic-raw" placeholder="1050" oninput="calcInvProfit()"></div>';
+  html+='<div class="fg"><label>가공비 (원/ton)</label><input type="number" id="ic-proc" placeholder="50000" oninput="calcInvProfit()"></div>';
+  html+='<div class="fg"><label>물류비 (원/ton)</label><input type="number" id="ic-trans" placeholder="20000" oninput="calcInvProfit()"></div>';
+  html+='<div class="fg"><label>스캘프 손실율 (%)</label><input type="number" id="ic-scalp" value="2" step="0.1" oninput="calcInvProfit()"></div>';
+  html+='<div class="fg"><label>고철 단가 (원/kg)</label><input type="number" id="ic-scrap" placeholder="340" oninput="calcInvProfit()"></div>';
+  html+='</div>';
+  html+='<div id="inv-profit-result"><div class="text-m fs12">판매단가와 원가 정보를 입력하면 자동 계산됩니다</div></div>';
+  html+='</div>';
+
+  document.getElementById('inv-builder').style.display='block';
+  document.getElementById('inv-builder').innerHTML=html;
+}
+
+function syncCarryQty(inp){
+  const oid=inp.dataset.oid;
+  const prod=+inp.dataset.prod;
+  const billed=Math.min(Math.max(0,+inp.value||0),prod);
+  inp.value=billed;
+  const carry=prod-billed;
+  const carryEl=document.getElementById('carry-'+oid);
+  if(carryEl) carryEl.textContent=fmt(carry)+'장';
+  const monthInp=document.querySelector('.inv-carry-month[data-oid="'+oid+'"]');
+  if(monthInp){monthInp.disabled=carry<=0;monthInp.style.opacity=carry>0?'1':'0.4';}
+  calcInvProfit();
+}
+
+function calcInvProfit(){
+  const rawPrice=+(document.getElementById('ic-raw')||{value:0}).value||0;
+  const procCost=+(document.getElementById('ic-proc')||{value:0}).value||0;
+  const transCost=+(document.getElementById('ic-trans')||{value:0}).value||0;
+  const scalpPct=+(document.getElementById('ic-scalp')||{value:2}).value||2;
+  const scrapPrice=+(document.getElementById('ic-scrap')||{value:0}).value||0;
+  const out=document.getElementById('inv-profit-result');
+  if(!out) return;
+
+  const ids=Array.from(document.querySelectorAll('.invchk:checked')).map(c=>+c.dataset.id);
+  const orders=ids.map(id=>DB.orders.find(o=>o.id===id)).filter(Boolean);
+
+  let totalRev=0,totalCostAll=0,rows='';
+  orders.forEach(function(o){
+    const billInp=document.querySelector('.inv-bill-qty[data-oid="'+o.id+'"]');
+    const priceInp=document.querySelector('.inv-price[data-oid="'+o.id+'"]');
+    const billed=billInp?+billInp.value:0;
+    const sellPrice=priceInp?+priceInp.value:0;
+    if(!billed) return;
+    const shw=sw(o.t,o.w,o.h);
+    const netKg=shw*billed;
+    const lossKg=netKg*scalpPct/100;
+    const rawKg=netKg+lossKg;
+    const rev=netKg*sellPrice;
+    const rc=rawKg*rawPrice;
+    const pc=rawKg/1000*procCost;
+    const tc=rawKg/1000*transCost;
+    const sr=lossKg*scrapPrice;
+    const cost=rc+pc+tc-sr;
+    const profit=rev-cost;
+    const margin=rev>0?profit/rev*100:0;
+    totalRev+=rev; totalCostAll+=cost;
+    const pc2=profit>=0?'var(--green)':'var(--red)';
+    const mc2=margin>=0?'var(--green)':'var(--red)';
+    rows+='<tr style="border-bottom:1px solid var(--border)">'
+      +'<td style="padding:7px 10px">'+o.customer+'</td>'
+      +'<td style="padding:7px 10px;font-family:var(--mono);font-size:11px">'+o.t+'t×'+o.w+'×'+o.h+'</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono)">'+fmt(billed)+'장</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono)">'+fd(netKg/1000,3)+'t</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono);color:var(--green)">'+(rev?fmt(rev)+'원':'—')+'</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono);color:var(--red)">'+(cost?fmt(cost)+'원':'—')+'</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono);color:'+pc2+';font-weight:700">'+(rev?(profit>=0?'+':'')+fmt(profit)+'원':'—')+'</td>'
+      +'<td style="padding:7px 10px;text-align:right;font-family:var(--mono);color:'+mc2+'">'+(rev?fd(margin,1)+'%':'—')+'</td>'
+      +'</tr>';
+  });
+
+  if(!rows){out.innerHTML='<div class="text-m fs12">청구량과 판매단가를 입력하면 계산됩니다</div>';return;}
+
+  const totalProfit=totalRev-totalCostAll;
+  const totalMargin=totalRev>0?totalProfit/totalRev*100:0;
+  const pc2=totalProfit>=0?'var(--green)':'var(--red)';
+
+  out.innerHTML='<div class="tbl-wrap">'
+    +'<table><thead><tr>'
+    +'<th>거래처</th><th>규격</th><th>수량</th><th>중량</th>'
+    +'<th style="text-align:right">매출액</th><th style="text-align:right">총원가</th>'
+    +'<th style="text-align:right">순이익</th><th style="text-align:right">마진율</th>'
+    +'</tr></thead><tbody>'+rows
+    +'<tr style="background:var(--surface);font-weight:700">'
+    +'<td colspan="4" style="padding:8px 10px;text-align:right">합계</td>'
+    +'<td style="padding:8px 10px;text-align:right;font-family:var(--mono);color:var(--green)">'+(totalRev?fmt(totalRev)+'원':'—')+'</td>'
+    +'<td style="padding:8px 10px;text-align:right;font-family:var(--mono);color:var(--red)">'+(totalCostAll?fmt(totalCostAll)+'원':'—')+'</td>'
+    +'<td style="padding:8px 10px;text-align:right;font-family:var(--mono);color:'+pc2+';font-size:15px">'+(totalRev?(totalProfit>=0?'+':'')+fmt(totalProfit)+'원':'—')+'</td>'
+    +'<td style="padding:8px 10px;text-align:right;font-family:var(--mono);color:'+pc2+'">'+(totalRev?fd(totalMargin,1)+'%':'—')+'</td>'
+    +'</tr></tbody></table></div>';
+}
+
+function printInvoice(){
+  const sup=JSON.parse(localStorage.getItem('supplier')||'{}');
+  const ids=Array.from(document.querySelectorAll('.invchk:checked')).map(c=>+c.dataset.id);
+  const orders=ids.map(id=>DB.orders.find(o=>o.id===id)).filter(Boolean);
+  if(!orders.length){alert('주문을 먼저 선택해 주세요.');return;}
+
+  let totalSupply=0,totalVat=0,rows='';
+  const carryovers=[];
+
+  orders.forEach(function(o){
+    const billInp=document.querySelector('.inv-bill-qty[data-oid="'+o.id+'"]');
+    const priceInp=document.querySelector('.inv-price[data-oid="'+o.id+'"]');
+    const carryInp=document.querySelector('.inv-carry-month[data-oid="'+o.id+'"]');
+    const billed=billInp?+billInp.value:(o.producible||o.qty);
+    const sellPrice=priceInp?+priceInp.value:0;
+    if(sellPrice) o.price=sellPrice;
+    const prodQty=o.producible||o.qty;
+    const carried=prodQty-billed;
+    const carryMonth=carryInp?carryInp.value:'';
+    const shw=sw(o.t,o.w,o.h);
+    const kg=shw*billed;
+    const supply=Math.round(kg*sellPrice);
+    const vat=Math.round(supply*0.1);
+    totalSupply+=supply; totalVat+=vat;
+    if(carried>0&&carryMonth) carryovers.push({o,carried,carryMonth});
+    rows+='<tr>'
+      +'<td>'+o.month.replace('-','/')+'</td>'
+      +'<td style="text-align:left">냉연강판</td>'
+      +'<td>'+o.t+'t × '+o.w+'mm × '+o.h+'mm</td>'
+      +'<td>'+fmt(billed)+'장</td>'
+      +'<td>'+fd(shw,3)+'</td>'
+      +'<td>'+fd(kg/1000,3)+'ton</td>'
+      +'<td>'+(sellPrice?fmt(sellPrice)+'원/kg':'—')+'</td>'
+      +'<td style="font-weight:700">'+(supply?fmt(supply)+'원':'—')+'</td>'
+      +'<td>'+(vat?fmt(vat)+'원':'—')+'</td>'
+      +'<td style="color:#c05a1a;font-size:11px">'+(carried>0?fmt(carried)+'장→'+carryMonth+' 이월':'—')+'</td>'
+      +'</tr>';
+  });
+
+  // Register carryovers
+  carryovers.forEach(function(item){
+    const exists=DB.carryovers.find(c=>c.orderId===item.o.id&&c.toMonth===item.carryMonth);
+    if(!exists) DB.carryovers.push({id:DB.nPid++,customer:item.o.customer,t:item.o.t,w:item.o.w,h:item.o.h,qty:item.carried,fromMonth:item.o.month,toMonth:item.carryMonth,status:'대기',orderId:item.o.id,unit:'장',created:today()});
+  });
+  save(); updateBadge();
+
+  const invoiceNo=docNo('INV');
+  const customer=orders[0].customer;
+  const month=orders[0].month;
+  const carryNote=carryovers.map(c=>fmt(c.carried)+'장('+c.carryMonth+' 이월)').join(', ');
+
+  const html='<div class="doc">'
+    +'<div class="doc-title">거 래 명 세 서</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;margin-bottom:16px">'
+      +'<div style="padding:12px;border-right:1px solid #000">'
+        +'<div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">공급받는자</div>'
+        +'<div style="font-size:18px;font-weight:900;margin-bottom:4px">'+customer+'</div>'
+        +'<div style="font-size:12px;color:#555">발행월: '+month+' &nbsp;|&nbsp; 문서번호: '+invoiceNo+'</div>'
+      +'</div>'
+      +'<div style="padding:12px">'
+        +'<div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">공급자</div>'
+        +'<div style="font-size:16px;font-weight:900;margin-bottom:4px">'+(sup.name||'영성강업')+'</div>'
+        +'<div style="font-size:11px;color:#555">대표: '+(sup.rep||'—')+'&nbsp;&nbsp;사업자: '+(sup.biz||'—')+'</div>'
+        +'<div style="font-size:11px;color:#555">TEL: '+(sup.tel||'—')+'</div>'
+        +'<div style="font-size:11px;color:#555">'+(sup.addr||'')+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<table class="doc-table">'
+      +'<thead><tr><th>월일</th><th>품목</th><th>규격</th><th>수량</th><th>단중(kg)</th><th>중량</th><th>단가</th><th>공급가액</th><th>세액</th><th>비고</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+      +'<tfoot>'
+        +'<tr style="background:#f0f0f0"><td colspan="7" style="text-align:right;font-weight:700">합 계</td><td style="font-weight:700">'+(totalSupply?fmt(totalSupply)+'원':'—')+'</td><td style="font-weight:700">'+(totalVat?fmt(totalVat)+'원':'—')+'</td><td></td></tr>'
+        +'<tr style="background:#fff8e0"><td colspan="7" style="text-align:right;font-weight:900;font-size:13px">청구 합계 (VAT 포함)</td><td colspan="2" style="font-weight:900;font-size:14px;color:#c05a1a">'+(totalSupply+totalVat?fmt(totalSupply+totalVat)+'원':'—')+'</td><td></td></tr>'
+      +'</tfoot>'
+    +'</table>'
+    +(carryNote?'<div style="background:#fff9f0;border:1px solid #e0b070;border-radius:4px;padding:10px;font-size:11px;margin-bottom:12px">※ 이월 내역: '+carryNote+'</div>':'')
+    +'<div style="margin-top:10px;padding:10px;border:1px dashed #ccc;font-size:12px"><strong>특이사항:</strong><div style="height:28px;border-bottom:1px dashed #ccc;margin-top:4px"></div></div>'
+    +'<div class="doc-sign" style="margin-top:14px">'
+      +'<div class="doc-sign-c">공급자<br><br><span style="font-weight:900">'+(sup.name||'영성강업')+'</span></div>'
+      +'<div class="doc-sign-c">수요자<br><br><span style="font-weight:900">'+customer+'</span></div>'
+      +'<div class="doc-sign-c">날&nbsp;&nbsp;짜<br><br>'+today()+'</div>'
+    +'</div>'
+    +'<div style="text-align:center;font-size:10px;color:#aaa;margin-top:10px">'+(sup.name||'영성강업')+' · '+today()+'</div>'
+  +'</div>';
+
+  printDoc(html, '거래명세서');
+}
+
+// placeholder — kept for DB compat
+function renderCarryover(){
+  const pending=DB.carryovers.filter(c=>c.status==='대기');
+  const done=DB.carryovers.filter(c=>c.status==='완료');
+  document.getElementById('co-stats')&&(document.getElementById('co-stats').innerHTML='');
+  const cl=document.getElementById('co-list');
+  if(!cl)return;
+  if(!DB.carryovers.length){ cl.innerHTML='<div class="text-m">이월 내역이 없습니다.</div>'; return; }
+  cl.innerHTML=DB.carryovers.map(c=>`
+    <div style="background:var(--card);border:1px solid ${c.status==='완료'?'var(--border)':'var(--accent)'};border-radius:8px;padding:14px;margin-bottom:10px">
+      <div class="flex justify-b items-c flex-wrap gap8">
+        <div>
+          <div class="fw7">${c.customer} <span class="badge b-${c.status==='완료'?'green':'orange'}" style="margin-left:6px">${c.status}</span></div>
+          <div class="mono fs12 text-m mt8" style="margin-top:4px">${c.t}t × ${c.w}mm × ${c.h}mm · <strong class="text-a">${fmt(c.qty)}${c.unit}</strong></div>
+          <div class="fs12 text-m">${c.fromMonth} 생산분 → <strong>${c.toMonth}</strong> 이월</div>
+        </div>
+        <div class="flex gap6">
+          ${c.status==='대기'?`
+            <div class="fg" style="flex-direction:row;align-items:center;gap:6px">
+              <label class="fs11 text-m" style="white-space:nowrap">이월 월 변경</label>
+              <input type="month" value="${c.toMonth}" onchange="c.toMonth=this.value;save()" style="width:120px;font-size:12px;padding:4px 8px">
+            </div>
+            <button class="btn btn-green btn-sm" onclick="completeCarryover(${c.id})">✅ 이월 완료</button>
+            <button class="btn btn-ghost btn-sm" onclick="genInvoice(${c.id})">📄 계산서</button>
+          `:`<button class="btn btn-ghost btn-sm" onclick="genInvoice(${c.id})">📄 계산서</button>`}
+          <button class="btn btn-danger btn-sm" onclick="DB.carryovers=DB.carryovers.filter(x=>x.id!=${c.id});save();renderCarryover()">삭제</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function completeCarryover(id){
+  const c=DB.carryovers.find(x=>x.id===id);
+  if(c){ c.status='완료'; save(); renderCarryover(); updateBadge(); }
+}
+
+function genInvoice(id){
+  const c=DB.carryovers.find(x=>x.id===id);
+  if(!c)return;
+  const order=DB.orders.find(o=>o.id===c.orderId);
+  const unitWt=sw(c.t,c.w,c.h);
+  const totKg=unitWt*c.qty;
+  const price=order?.price||0;
+  const totAmt=totKg*price;
+  const html=`<div class="doc">
+    <div class="doc-title">이 월 계 산 서</div>
+    <div class="doc-grid">
+      <div class="doc-cell"><div class="doc-label">계산서 번호</div><div class="doc-val">${docNo('INV')}</div></div>
+      <div class="doc-cell"><div class="doc-label">발행일</div><div class="doc-val">${today()}</div></div>
+      <div class="doc-cell"><div class="doc-label">거래처</div><div class="doc-val">${c.customer}</div></div>
+      <div class="doc-cell"><div class="doc-label">대상 년월</div><div class="doc-val">${c.toMonth}</div></div>
+      <div class="doc-cell"><div class="doc-label">원 생산 월</div><div class="doc-val">${c.fromMonth}</div></div>
+      <div class="doc-cell"><div class="doc-label">이월 사유</div><div class="doc-val">코일 가공 특성상 초과 생산</div></div>
+    </div>
+    <table class="doc-table">
+      <thead><tr><th>품목</th><th>규격</th><th>수량</th><th>1장 무게</th><th>총 중량</th><th>단가</th><th>금액</th></tr></thead>
+      <tbody><tr>
+        <td>냉연강판 (이월분)</td>
+        <td>${c.t}t × ${c.w}mm × ${c.h}mm</td>
+        <td>${fmt(c.qty)}장</td>
+        <td>${fd(unitWt,3)}kg</td>
+        <td>${fd(totKg/1000,3)}ton</td>
+        <td>${price?fmt(price)+'원/kg':'협의'}</td>
+        <td style="font-weight:700">${totAmt?fmt(totAmt)+'원':'—'}</td>
+      </tr></tbody>
+      <tfoot><tr style="background:#f0f0f0">
+        <td colspan="6" style="text-align:right;font-weight:700">합 계</td>
+        <td style="font-weight:700">${totAmt?fmt(totAmt)+'원':'—'}</td>
+      </tr></tfoot>
+    </table>
+    <div style="font-size:11px;color:#888;margin-top:8px">※ 본 계산서는 ${c.fromMonth} 생산분 중 초과 생산된 ${c.qty}장에 대한 ${c.toMonth} 이월 청구서입니다.</div>
+    <div class="doc-sign" style="margin-top:20px">
+      <div class="doc-sign-c">공급자 (영성강업)</div>
+      <div class="doc-sign-c">수요자 (${c.customer})</div>
+      <div class="doc-sign-c">날&nbsp;&nbsp;짜</div>
+    </div>
+  </div>`;
+  printDoc(html, '이월계산서');
+}
+
+// ==============================
+// DELIVERY (송장·납품서)
+// ==============================
+function renderDelivery(){
+  document.getElementById('del-date').value = document.getElementById('del-date').value || today();
+  refreshCustomerSelects();
+  const eligible = DB.orders.filter(o => o.status === '가공중' || o.status === '계획중' || o.status === '완료');
+  const container = document.getElementById('del-order-list');
+  if(!eligible.length){
+    container.innerHTML = '<div class="text-m">가공 지시 완료된 주문이 없습니다.</div>';
+    return;
+  }
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">';
+  eligible.forEach(function(o){
+    const confirmedQty = o.confirmedQty || o.qty;
+    const shw = sw(o.t, o.w, o.h);
+    const totKg = shw * confirmedQty;
+    html += '<label style="display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer">'
+      + '<input type="checkbox" class="delchk" data-id="' + o.id + '" style="accent-color:var(--accent);width:16px;height:16px;flex-shrink:0;margin-top:2px">'
+      + '<div>'
+      + '<div class="fw7">' + o.customer + '</div>'
+      + '<div class="mono text-m fs12">' + o.t + 't × ' + o.w + 'mm × ' + o.h + 'mm</div>'
+      + '<div class="mono fs12">' + fmt(confirmedQty) + '장 · ' + fd(totKg/1000,3) + 'ton</div>'
+      + '<div class="fs12 text-m">' + o.month + (o.due ? ' · 납기 ' + o.due : '') + '</div>'
+      + '</div></label>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function printDelivery(){
+  const ids = Array.from(document.querySelectorAll('.delchk:checked')).map(c => +c.dataset.id);
+  if(!ids.length){ alert('주문을 선택해 주세요.'); return; }
+  const orders = ids.map(id => DB.orders.find(o => o.id === id)).filter(Boolean);
+  const sup = JSON.parse(localStorage.getItem('supplier') || '{}');
+
+  const delDate = document.getElementById('del-date').value || today();
+  const car = document.getElementById('del-car').value || '—';
+  const driver = document.getElementById('del-driver').value || '—';
+  const driverTel = document.getElementById('del-tel').value || '—';
+  const addr = document.getElementById('del-addr').value || '—';
+  const note = document.getElementById('del-note').value || '';
+  const customer = orders[0].customer;
+
+  let totalQty = 0, totalKg = 0;
+  let rows = '';
+  orders.forEach(function(o, idx){
+    const confirmedQty = o.confirmedQty || o.qty;
+    const shw = sw(o.t, o.w, o.h);
+    const kg = shw * confirmedQty;
+    totalQty += confirmedQty;
+    totalKg += kg;
+    rows += '<tr>'
+      + '<td>' + (idx+1) + '</td>'
+      + '<td style="text-align:left">냉연강판</td>'
+      + '<td>' + o.t + 't</td>'
+      + '<td>' + fmt(o.w) + 'mm</td>'
+      + '<td>' + (o.type === '판재' ? fmt(o.h)+'mm' : '코일') + '</td>'
+      + '<td>' + fmt(confirmedQty) + (o.type === '판재' ? '장' : '줄') + '</td>'
+      + '<td>' + fd(shw,3) + 'kg</td>'
+      + '<td style="font-weight:700">' + fd(kg/1000,3) + 'ton</td>'
+      + '<td></td>'
+      + '</tr>';
+  });
+
+  const docNoStr = docNo('DL');
+
+  const html = '<div class="doc">'
+    + '<div class="doc-title">납 품 서 · 송 장</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;margin-bottom:14px">'
+      // 수취인
+      + '<div style="padding:12px;border-right:1px solid #000">'
+        + '<div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">수 취 인</div>'
+        + '<div style="font-size:18px;font-weight:900;margin-bottom:6px">' + customer + '</div>'
+        + '<div style="font-size:11px;color:#555;margin-bottom:2px">📍 ' + addr + '</div>'
+      + '</div>'
+      // 발송인
+      + '<div style="padding:12px">'
+        + '<div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">발 송 인</div>'
+        + '<div style="font-size:15px;font-weight:900;margin-bottom:4px">' + (sup.name||'영성강업') + '</div>'
+        + '<div style="font-size:11px;color:#555">대표: ' + (sup.rep||'—') + '</div>'
+        + '<div style="font-size:11px;color:#555">TEL: ' + (sup.tel||'—') + '</div>'
+        + '<div style="font-size:11px;color:#555">' + (sup.addr||'') + '</div>'
+      + '</div>'
+    + '</div>'
+    // 출하 정보
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border:1px solid #000;margin-bottom:14px">'
+      + '<div style="padding:10px 12px;border-right:1px solid #ccc"><div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:3px">출하일</div><div style="font-size:13px;font-weight:700">' + delDate + '</div></div>'
+      + '<div style="padding:10px 12px;border-right:1px solid #ccc"><div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:3px">차량번호</div><div style="font-size:13px;font-weight:700">' + car + '</div></div>'
+      + '<div style="padding:10px 12px;border-right:1px solid #ccc"><div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:3px">기사명</div><div style="font-size:13px;font-weight:700">' + driver + '</div></div>'
+      + '<div style="padding:10px 12px"><div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:3px">연락처</div><div style="font-size:13px;font-weight:700">' + driverTel + '</div></div>'
+    + '</div>'
+    + '<div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:3px">문서번호: ' + docNoStr + '</div>'
+    // 품목 테이블
+    + '<table class="doc-table" style="margin-top:8px">'
+      + '<thead><tr><th>순번</th><th>품목</th><th>두께</th><th>폭</th><th>길이/형태</th><th>수량</th><th>단중(kg)</th><th>중량(ton)</th><th>수령확인</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody>'
+      + '<tfoot>'
+        + '<tr style="background:#f0f0f0">'
+          + '<td colspan="5" style="text-align:right;font-weight:700">합 계</td>'
+          + '<td style="font-weight:700">' + fmt(totalQty) + '</td>'
+          + '<td></td>'
+          + '<td style="font-weight:700">' + fd(totalKg/1000,3) + 'ton</td>'
+          + '<td></td>'
+        + '</tr>'
+      + '</tfoot>'
+    + '</table>'
+    + (note ? '<div style="background:#f8f8f8;border:1px solid #ddd;border-radius:4px;padding:10px;font-size:12px;margin-top:12px"><strong>특이사항:</strong> ' + note + '</div>' : '')
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:3px solid #000;margin-top:16px">'
+      + '<div style="padding:36px 12px 10px;text-align:center;border-right:1px solid #ccc;font-size:11px;font-weight:700">발송 확인<br><br><span style="font-size:12px">' + (sup.name||'영성강업') + '</span></div>'
+      + '<div style="padding:36px 12px 10px;text-align:center;border-right:1px solid #ccc;font-size:11px;font-weight:700">운반자 확인<br><br><span style="font-size:12px">' + driver + ' (' + car + ')</span></div>'
+      + '<div style="padding:36px 12px 10px;text-align:center;font-size:11px;font-weight:700">수취 확인<br><br><span style="font-size:12px">' + customer + '</span></div>'
+    + '</div>'
+    + '<div style="text-align:center;font-size:10px;color:#aaa;margin-top:10px">' + (sup.name||'영성강업') + ' · 출력일 ' + today() + '</div>'
+  + '</div>';
+
+  printDoc(html, '납품서');
+
+  // 상태를 완료로 업데이트
+  orders.forEach(function(o){
+    const ord = DB.orders.find(x => x.id === o.id);
+    if(ord && ord.status !== '완료') ord.status = '완료';
+    consumeSheetStock(o); // 출하 시 판재 재고 차감
+    consumeScalp(o);      // 출하 시 연관 스캘프 처리완료
+  });
+  save(); updateBadge();
+}
+
+// ==============================
+// SETTINGS
+// ==============================
+function toggleSettings(){
+  const p = document.getElementById('settings-panel');
+  p.style.display = p.style.display==='none' ? 'block' : 'none';
+  if(p.style.display==='block'){ loadSupplier(); renderCustomers(); }
+}
+
+function renderWorkop(){
+  renderProcess();
+  renderDelivery();
+  refreshCustomerSelects();
+}
+
+// ==============================
+// CUSTOMERS (거래처 관리)
+// ==============================
+function addCustomer(){
+  const name = document.getElementById('cu-name').value.trim();
+  if(!name){ alert('거래처명은 필수입니다.'); return; }
+  const existing = DB.customers.find(c => c.name === name);
+  if(existing){ alert('이미 등록된 거래처입니다.'); return; }
+  DB.customers.push({
+    id: DB.nCustId++,
+    name,
+    contact: document.getElementById('cu-contact').value.trim(),
+    phone:   document.getElementById('cu-phone').value.trim(),
+    fax:     document.getElementById('cu-fax').value.trim(),
+    biz:     document.getElementById('cu-biz').value.trim(),
+    addr:    document.getElementById('cu-addr').value.trim(),
+    note:    document.getElementById('cu-note').value.trim()
+  });
+  save();
+  renderCustomers();
+  refreshCustomerSelects();
+  ['cu-name','cu-contact','cu-phone','cu-fax','cu-biz','cu-addr','cu-note']
+    .forEach(id => document.getElementById(id).value='');
+}
+
+function renderCustomers(){
+  const list = document.getElementById('customer-list');
+  if(!list) return;
+  if(!DB.customers.length){
+    list.innerHTML='<div class="text-m" style="font-size:12px;color:var(--muted)">등록된 거래처가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = DB.customers.map(cu =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:6px;margin-bottom:6px">'
+      + '<div>'
+        + '<div style="font-weight:700;font-size:13px">'+cu.name+'</div>'
+        + '<div style="font-size:11px;color:var(--muted)">'
+          + [cu.contact, cu.phone, cu.addr].filter(Boolean).join(' · ')
+        + '</div>'
+      + '</div>'
+      + '<div class="flex gap6">'
+        + '<button class="btn btn-ghost btn-sm" onclick="editCustomer('+cu.id+')" style="padding:2px 8px;font-size:11px">수정</button>'
+        + '<button class="btn btn-danger btn-sm" onclick="deleteCustomer('+cu.id+')" style="padding:2px 8px;font-size:11px">삭제</button>'
+      + '</div>'
+    + '</div>'
+  ).join('');
+}
+
+function deleteCustomer(id){
+  if(!confirm('삭제할까요?')) return;
+  DB.customers = DB.customers.filter(c => c.id !== id);
+  save(); renderCustomers(); refreshCustomerSelects();
+}
+
+function editCustomer(id){
+  const cu = DB.customers.find(c => c.id === id);
+  if(!cu) return;
+  document.getElementById('cu-name').value    = cu.name;
+  document.getElementById('cu-contact').value = cu.contact||'';
+  document.getElementById('cu-phone').value   = cu.phone||'';
+  document.getElementById('cu-fax').value     = cu.fax||'';
+  document.getElementById('cu-biz').value     = cu.biz||'';
+  document.getElementById('cu-addr').value    = cu.addr||'';
+  document.getElementById('cu-note').value    = cu.note||'';
+  DB.customers = DB.customers.filter(c => c.id !== id);
+  save(); renderCustomers(); refreshCustomerSelects();
+  document.getElementById('cu-name').focus();
+}
+
+function refreshCustomerSelects(){
+  const opts = '<option value="">── 등록 거래처 선택 ──</option>'
+    + DB.customers.map(cu => '<option value="'+cu.id+'">'+cu.name+'</option>').join('');
+
+  // 주문 접수
+  const sel = document.getElementById('i-cust-sel');
+  if(sel){ const v=sel.value; sel.innerHTML=opts; sel.value=v; }
+
+  // 송장
+  const delSel = document.getElementById('del-cust-sel');
+  if(delSel){ const v=delSel.value; delSel.innerHTML=opts+'<option value="">── 등록 거래처 선택 ──</option>'.replace('──','직접 입력'); delSel.value=v; }
+}
+
+function fillCustomerFromSel(id){
+  if(!id) return;
+  const cu = DB.customers.find(c => c.id === +id);
+  if(!cu) return;
+  document.getElementById('i-cust').value = cu.name;
+}
+
+function fillDeliveryCustomer(id){
+  if(!id) return;
+  const cu = DB.customers.find(c => c.id === +id);
+  if(!cu) return;
+  const addr = document.getElementById('del-addr');
+  if(addr && cu.addr) addr.value = cu.addr;
+}
+
+// ==============================
+// COIL OCR
+// ==============================
+function handleCoilDrop(ev){
+  ev.preventDefault();
+  document.getElementById('coil-drop-zone').classList.remove('drag');
+  const f = ev.dataTransfer.files[0];
+  if(f) processCoilFile(f);
+}
+
+async function processCoilFile(file){
+  if(!file) return;
+  const status = document.getElementById('coil-ocr-status');
+  status.style.display = 'flex';
+
+  const resizeImage = (dataUrl, maxPx=1200) => new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width*scale);
+      canvas.height = Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
+    };
+    img.src = dataUrl;
+  });
+
+  const isHeic = file.name.toLowerCase().match(/\.heic$|\.heif$/i);
+  let jpegFile = file;
+  if(isHeic && typeof heic2any !== 'undefined'){
+    status.innerHTML = '<div class="ocr-loading"><div class="spinner"></div> HEIC 변환 중...</div>';
+    try {
+      const blob = await heic2any({blob:file, toType:'image/jpeg', quality:0.88});
+      jpegFile = new File([blob], file.name.replace(/\.heic$/i,'.jpg'), {type:'image/jpeg'});
+    } catch(e) {
+      // 변환 실패해도 원본으로 계속 진행
+    }
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const original = e.target.result;
+    document.getElementById('coil-photo-placeholder').style.display = 'none';
+    document.getElementById('coil-photo-show').style.display = 'block';
+    document.getElementById('coil-photo-show').innerHTML = '<img src="'+original+'" class="photo-preview">';
+
+    status.innerHTML = '<div class="ocr-loading"><div class="spinner"></div> 이미지 최적화 중...</div>';
+    const resized = await resizeImage(original, 1200);
+    const b64 = resized.split(',')[1];
+    status.innerHTML = '<div class="ocr-loading"><div class="spinner"></div> 재고 데이터 분석 중...</div>';
+
+    const prompt = '이것은 철강 코일 재고 목록 또는 입고 내역 파일입니다.'
+      + ' 코일 정보(두께t, 폭mm, 중량kg, 단가원/kg, 입고일, 공급처, 코일번호)를 추출해 JSON으로만 응답하세요.'
+      + ' 형식: {"coils":[{"t":두께숫자,"w":폭숫자,"weight":중량kg숫자,"price":단가또는null,"date":"YYYY-MM-DD또는null","supplier":"공급처또는null","no":"코일번호또는null"}]}'
+      + ' 숫자는 단위 없이 숫자만. 불명확하면 null. 설명 없이 JSON만.';
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          messages:[{role:'user', content:[
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
+            {type:'text', text:prompt}
+          ]}]
+        })
+      });
+      const data = await resp.json();
+      if(data.error) throw new Error(data.error.message);
+      const text = data.content.map(c=>c.text||'').join('');
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+      showCoilOCRResult(parsed.coils||[]);
+      status.style.display = 'none';
+    } catch(err) {
+      status.innerHTML = '<span style="color:var(--red)">⚠ 분석 실패: '+err.message+'</span>';
+    }
+  };
+  reader.readAsDataURL(jpegFile);
+}
+
+function showCoilOCRResult(coils){
+  const div = document.getElementById('coil-ocr-result');
+  div.style.display = 'block';
+  if(!coils.length){
+    div.innerHTML = '<div class="text-m">코일 데이터를 인식하지 못했습니다. 직접 입력해 주세요.</div>';
+    return;
+  }
+
+  let rows = coils.map(function(coil, i){
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      +'<td style="padding:5px 4px;text-align:center;color:var(--muted);font-size:12px">'+(i+1)+'</td>'
+      +'<td style="padding:4px"><input type="number" step="0.1" value="'+(coil.t||'')+'" class="ci-t" style="width:60px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="number" value="'+(coil.w||'')+'" class="ci-w" style="width:70px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="number" value="'+(coil.weight||'')+'" class="ci-wt" style="width:80px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="number" value="'+(coil.price||'')+'" class="ci-price" style="width:80px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="date" value="'+(coil.date||'')+'" class="ci-date" style="width:130px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="text" value="'+(coil.supplier||'')+'" class="ci-sup" style="width:90px;font-size:12px"></td>'
+      +'<td style="padding:4px"><input type="text" value="'+(coil.no||'')+'" class="ci-no" style="width:80px;font-size:12px"></td>'
+      +'<td style="padding:4px;text-align:center"><input type="checkbox" class="ci-chk" checked style="accent-color:var(--accent);width:15px;height:15px"></td>'
+      +'</tr>';
+  }).join('');
+
+  div.innerHTML = '<div style="background:rgba(61,214,140,.07);border:1px solid var(--green);border-radius:8px;padding:14px">'
+    +'<div style="color:var(--green);font-weight:700;margin-bottom:12px">✅ '+coils.length+'개 코일 인식 — 수정 후 등록하세요</div>'
+    +'<div style="overflow-x:auto;margin-bottom:10px">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    +'<thead><tr style="border-bottom:2px solid var(--border)">'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">#</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">두께t</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">폭mm</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">중량kg</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">단가원/kg</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">입고일</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">공급처</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">코일번호</th>'
+    +'<th style="padding:6px 4px;font-size:10px;color:var(--muted);font-weight:700">등록</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<button class="btn btn-green" onclick="bulkAddCoils()">✅ 체크된 코일 일괄 등록</button>'
+    +'</div>';
+}
+
+function bulkAddCoils(){
+  const rows = document.querySelectorAll('#coil-ocr-result tbody tr');
+  let added = 0;
+  rows.forEach(function(row){
+    const chk = row.querySelector('.ci-chk');
+    if(!chk||!chk.checked) return;
+    const t   = +row.querySelector('.ci-t').value;
+    const w   = +row.querySelector('.ci-w').value;
+    const wt  = +row.querySelector('.ci-wt').value;
+    if(!t||!w||!wt) return;
+    const coil = {
+      id: DB.nCid++, t, w, weight: wt, remaining: wt,
+      price: +row.querySelector('.ci-price').value||0,
+      date:    row.querySelector('.ci-date').value,
+      supplier:row.querySelector('.ci-sup').value.trim(),
+      no:      row.querySelector('.ci-no').value.trim()
+    };
+    DB.coils.push(coil);
+    added++;
+  });
+  if(!added){ alert('등록할 코일이 없습니다. 두께/폭/중량을 확인하세요.'); return; }
+  save(); renderCoils();
+  document.getElementById('coil-ocr-result').style.display='none';
+  document.getElementById('coil-photo-show').style.display='none';
+  document.getElementById('coil-photo-placeholder').style.display='block';
+  alert(added+'개 코일 등록 완료!');
+}
+
+// ==============================
+// COILS
+// ==============================
+function addCoil(){
+  const c={
+    id:DB.nCid++, t:+document.getElementById('c-t').value, w:+document.getElementById('c-w').value,
+    weight:+document.getElementById('c-wt').value, price:+document.getElementById('c-price').value||0,
+    date:document.getElementById('c-date').value, supplier:document.getElementById('c-sup').value.trim(),
+    no:document.getElementById('c-no').value.trim()
+  };
+  c.remaining=c.weight;
+  if(!c.t||!c.w||!c.weight){ alert('두께, 폭, 중량은 필수입니다.'); return; }
+  DB.coils.push(c); save(); renderCoils();
+  ['c-t','c-w','c-wt','c-price','c-sup','c-no'].forEach(id=>document.getElementById(id).value='');
+}
+
+function renderCoils(){
+  const tb=document.getElementById('coil-tbody');
+  const alive=DB.coils.filter(c=>c.remaining>0);
+  document.getElementById('coil-stats').innerHTML=`
+    <div class="stat"><div class="stat-l">총 코일</div><div class="stat-v">${DB.coils.length}</div><div class="stat-s">개</div></div>
+    <div class="stat"><div class="stat-l">잔여 코일</div><div class="stat-v text-g">${alive.length}</div><div class="stat-s">개</div></div>
+    <div class="stat"><div class="stat-l">잔여 총중량</div><div class="stat-v">${fd(alive.reduce((s,c)=>s+c.remaining,0)/1000,2)}</div><div class="stat-s">ton</div></div>
+  `;
+  if(!DB.coils.length){ tb.innerHTML=`<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--muted)">코일이 없습니다</td></tr>`; return; }
+  tb.innerHTML=DB.coils.map((c,i)=>{
+    const pct=c.remaining/c.weight*100;
+    const sc=c.remaining<=0?'red':pct<20?'orange':'green';
+    return `<tr>
+      <td class="text-m mono">${i+1}</td>
+      <td class="mono">${c.no||'—'}</td>
+      <td class="num">${c.t}t</td>
+      <td class="num">${fmt(c.w)}mm</td>
+      <td class="num">${fmt(c.weight)}kg</td>
+      <td class="num text-a">${fmt(c.remaining)}kg</td>
+      <td>
+        <div class="flex items-c gap6"><div class="wbar" style="width:70px;flex-shrink:0"><div class="wfill" style="width:${pct}%"></div></div><span class="mono text-m fs11">${fd(pct,0)}%</span></div>
+      </td>
+      <td class="num">${c.price?fmt(c.price)+'원/kg':'—'}</td>
+      <td>${c.date||'—'}</td>
+      <td>${c.supplier||'—'}</td>
+      <td><span class="badge b-${sc}">${c.remaining<=0?'소진':pct<20?'부족':'정상'}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="DB.coils=DB.coils.filter(x=>x.id!=${c.id});save();renderCoils()">삭제</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ==============================
+// SUBTAB SWITCH
+// ==============================
+function switchStab(name){
+  ['coil','sheet','scalp'].forEach(function(n){
+    const btn = document.getElementById('stab-'+n);
+    const cnt = document.getElementById('stab-'+n+'-content');
+    const active = n===name;
+    if(btn){ btn.style.background=active?'var(--accent)':'transparent'; btn.style.color=active?'#fff':'var(--muted)'; btn.style.fontWeight=active?'600':'500'; }
+    if(cnt) cnt.style.display = active?'block':'none';
+  });
+}
+
+// ==============================
+// SHEET STOCK (판재 재고)
+// ==============================
+function addSheetStock(){
+  const t=+document.getElementById('ss-t').value;
+  const w=+document.getElementById('ss-w').value;
+  const h=+document.getElementById('ss-h').value;
+  const qty=+document.getElementById('ss-qty').value;
+  if(!t||!w||!h||!qty){ alert('두께·폭·길이·장수는 필수입니다.'); return; }
+  DB.sheetStock.push({
+    id:DB.nSsid++, t, w, h, qty,
+    customer:document.getElementById('ss-cust').value.trim(),
+    reason:document.getElementById('ss-reason').value,
+    created:today(), status:'보관중',
+    weight: sw(t,w,h)*qty
+  });
+  save(); renderSheetStock();
+  ['ss-t','ss-w','ss-h','ss-qty','ss-cust'].forEach(id=>document.getElementById(id).value='');
+}
+
+function addSheetStockAuto(order){
+  // 가공 확정 시 자동 호출 — 이월분(과잉)이 있으면 판재 재고에 자동 등록
+  if(!order.producible || order.producible <= order.qty) return;
+  const excess = order.producible - order.qty;
+  DB.sheetStock.push({
+    id:DB.nSsid++, t:order.t, w:order.w, h:order.h, qty:excess,
+    customer:order.customer, reason:'이월(과잉생산)',
+    created:today(), status:'보관중', orderId:order.id,
+    weight: sw(order.t,order.w,order.h)*excess
+  });
+}
+
+function consumeSheetStock(order){
+  // 송장 출력 시 해당 판재 재고 차감
+  const ss = DB.sheetStock.find(s => s.orderId===order.id && s.status==='보관중');
+  if(ss){ ss.status='출하완료'; ss.shippedDate=today(); }
+}
+
+function consumeScalp(order){
+  // 송장 출력 시 해당 작업의 스캘프 → 처리완료
+  if(!order.planId) return;
+  DB.scalps.forEach(function(sc){
+    if(sc.planId===order.planId && sc.autoCreated && sc.status!=='처리완료'){
+      // 재사용가능 스캘프는 실제 사용됐을 때만 차감 → 고철/에지는 자동 처리완료
+      if(sc.status==='고철처리'){
+        sc.status='처리완료';
+        sc.processedDate=today();
+      }
+    }
+  });
+}
+
+function renderSheetStock(){
+  const tb = document.getElementById('sheet-tbody');
+  if(!tb) return;
+  renderSheetStats();
+  if(!DB.sheetStock.length){
+    tb.innerHTML='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">판재 재고가 없습니다</td></tr>';
+    return;
+  }
+  const sc={보관중:'orange',출하완료:'green',취소:'red'};
+  tb.innerHTML=DB.sheetStock.map(function(s,i){
+    return '<tr>'
+      +'<td class="text-m mono">'+(i+1)+'</td>'
+      +'<td class="num">'+s.t+'t</td>'
+      +'<td class="num mono">'+fmt(s.w)+'×'+fmt(s.h)+'</td>'
+      +'<td class="num">'+fmt(s.qty)+'장</td>'
+      +'<td class="num text-a">'+fd(s.weight/1000,3)+'t</td>'
+      +'<td>'+(s.customer||'—')+'</td>'
+      +'<td class="text-m fs12">'+s.reason+'</td>'
+      +'<td class="text-m fs12">'+s.created+'</td>'
+      +'<td><span class="badge b-'+(sc[s.status]||'orange')+'">'+s.status+'</span></td>'
+      +'<td class="flex gap6">'
+        +(s.status==='보관중'?'<button class="btn btn-ghost btn-sm" onclick="changeSheetStatus('+s.id+',\'출하완료\')">출하</button>':'')
+        +'<button class="btn btn-danger btn-sm" onclick="deleteSheetStock('+s.id+')">삭제</button>'
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function renderSheetStats(){
+  const el = document.getElementById('sheet-stats');
+  if(!el) return;
+  const keeping = DB.sheetStock.filter(s=>s.status==='보관중');
+  const totQty = keeping.reduce((a,s)=>a+s.qty,0);
+  const totWt = keeping.reduce((a,s)=>a+s.weight,0);
+  el.innerHTML = '<div class="stat"><div class="stat-l">보관 중</div><div class="stat-v text-a">'+keeping.length+'</div><div class="stat-s">건</div></div>'
+    +'<div class="stat"><div class="stat-l">총 장수</div><div class="stat-v">'+fmt(totQty)+'</div><div class="stat-s">장</div></div>'
+    +'<div class="stat"><div class="stat-l">총 중량</div><div class="stat-v">'+fd(totWt/1000,2)+'</div><div class="stat-s">ton</div></div>';
+}
+
+function changeSheetStatus(id,status){ const s=DB.sheetStock.find(x=>x.id===id); if(s){s.status=status;save();renderSheetStock();} }
+function deleteSheetStock(id){ if(!confirm('삭제?'))return; DB.sheetStock=DB.sheetStock.filter(x=>x.id!==id); save();renderSheetStock(); }
+
+// ==============================
+// SCALPS (스캘프/잔재)
+// ==============================
+function addScalp(){
+  const t=+document.getElementById('sc-t').value;
+  const w=+document.getElementById('sc-w').value;
+  const wt=+document.getElementById('sc-wt').value;
+  if(!t||!w){ alert('두께·폭은 필수입니다.'); return; }
+  DB.scalps.push({
+    id:DB.nScid++, t, w, weight:wt,
+    coilNo:document.getElementById('sc-coilno').value.trim(),
+    status:document.getElementById('sc-status').value,
+    note:document.getElementById('sc-note').value.trim(),
+    created:today()
+  });
+  save(); renderScalps();
+  ['sc-t','sc-w','sc-wt','sc-coilno','sc-note'].forEach(id=>document.getElementById(id).value='');
+}
+
+function addScalpAuto(coil, trimMm, coilLen){
+  // 슬리팅 후 로스가 충분히 크면 자동 스캘프 등록 제안용 데이터 생성
+  if(trimMm < 30) return null; // 30mm 미만은 등록 안함
+  const scalpWt = Math.round(coil.t/1000 * trimMm/1000 * coilLen * 7850);
+  return {t:coil.t, w:trimMm, weight:scalpWt, coilNo:coil.no||'', status:'재사용가능', note:'슬리팅 로스 '+trimMm+'mm', created:today()};
+}
+
+function renderScalps(){
+  const tb = document.getElementById('scalp-tbody');
+  if(!tb) return;
+  renderScalpStats();
+  if(!DB.scalps.length){
+    tb.innerHTML='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">등록된 스캘프/잔재가 없습니다</td></tr>';
+    return;
+  }
+  const sc={'재사용가능':'green','재판매가능':'blue','고철처리':'red','처리완료':'muted'};
+  tb.innerHTML=DB.scalps.map(function(s,i){
+    return '<tr>'
+      +'<td class="text-m mono">'+(i+1)+'</td>'
+      +'<td class="num">'+s.t+'t</td>'
+      +'<td class="num">'+fmt(s.w)+'mm</td>'
+      +'<td class="num text-a">'+(s.weight?fmt(s.weight)+'kg':'—')+'</td>'
+      +'<td class="text-m fs12">'+(s.coilNo||'—')+'</td>'
+      +'<td><span class="badge b-'+(sc[s.status]||'orange')+'">'+s.status+'</span></td>'
+      +'<td class="text-m fs12">'+(s.note||'—')+'</td>'
+      +'<td class="text-m fs12">'+s.created+'</td>'
+      +'<td>'
+        +(s.status!=='처리완료'?'<select onchange="updateScalpStatus('+s.id+',this.value)" style="font-size:11px;padding:2px 6px">'
+          +'<option '+(s.status==='고철처리'?'selected':'')+' value="고철처리">고철처리</option>'
+          +'<option '+(s.status==='재사용가능'?'selected':'')+' value="재사용가능">재사용가능</option>'
+          +'<option '+(s.status==='재판매가능'?'selected':'')+' value="재판매가능">재판매가능</option>'
+          +'<option '+(s.status==='처리완료'?'selected':'')+' value="처리완료">처리완료</option>'
+          +'</select>':'<span class="text-m fs12">처리완료</span>')
+      +'</td>'
+      +'<td><button class="btn btn-danger btn-sm" onclick="deleteScalp('+s.id+')">삭제</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function renderScalpStats(){
+  const el = document.getElementById('scalp-stats');
+  if(!el) return;
+  const reuse = DB.scalps.filter(s=>s.status==='재사용가능');
+  const scrap = DB.scalps.filter(s=>s.status==='고철처리');
+  const scraptWt = scrap.reduce((a,s)=>a+(s.weight||0),0);
+  el.innerHTML = '<div class="stat"><div class="stat-l">재사용 가능</div><div class="stat-v text-g">'+reuse.length+'</div><div class="stat-s">건</div></div>'
+    +'<div class="stat"><div class="stat-l">고철 처리</div><div class="stat-v text-r">'+scrap.length+'</div><div class="stat-s">건</div></div>'
+    +'<div class="stat"><div class="stat-l">고철 중량</div><div class="stat-v">'+fd(scraptWt/1000,2)+'</div><div class="stat-s">ton</div></div>';
+}
+
+function updateScalpStatus(id,status){ const s=DB.scalps.find(x=>x.id===id); if(s){s.status=status;save();renderScalps();} }
+function deleteScalp(id){ if(!confirm('삭제?'))return; DB.scalps=DB.scalps.filter(x=>x.id!==id); save();renderScalps(); }
+
+// ==============================
+// PROFIT
+// ==============================
+function calcProfit(){
+  const t=+document.getElementById('p-t').value,w=+document.getElementById('p-w').value,
+        h=+document.getElementById('p-h').value,qty=+document.getElementById('p-qty').value;
+  const raw=+document.getElementById('p-raw').value,sell=+document.getElementById('p-sell').value,
+        proc=+document.getElementById('p-proc').value,trans=+document.getElementById('p-trans').value,
+        scalp=+document.getElementById('p-scalp').value,scrap=+document.getElementById('p-scrap').value;
+  if(!t||!w||!h||!qty)return;
+  const shw=sw(t,w,h),net=shw*qty,loss=net*scalp/100,rawWt=net+loss;
+  const rc=rawWt*raw,pc=rawWt/1000*proc,tc=rawWt/1000*trans,sr=loss*scrap;
+  const cost=rc+pc+tc-sr,rev=net*sell,profit=rev-cost,margin=rev>0?profit/rev*100:0;
+  document.getElementById('profit-out').innerHTML=`
+    <div style="background:var(--surface);border-radius:8px;padding:14px;margin-bottom:10px">
+      ${row('판재 1장',fd(shw,3)+'kg')} ${row('순제품 중량',fd(net,2)+'kg')}
+      ${row('스캘프 로스','−'+fd(loss,2)+'kg','red')} ${rowB('원자재 필요',fd(rawWt,2)+'kg')}
+    </div>
+    <div style="background:var(--surface);border-radius:8px;padding:14px;margin-bottom:10px">
+      ${row('원자재 원가','−'+fmt(rc)+'원','red')} ${row('가공비','−'+fmt(pc)+'원','red')}
+      ${row('운송비','−'+fmt(tc)+'원','red')} ${row('고철 회수','+'+fmt(sr)+'원','green')}
+      ${rowB('총 원가',fmt(cost)+'원')}
+    </div>
+    <div style="background:var(--surface);border-radius:8px;padding:14px">
+      ${row('매출액','+'+fmt(rev)+'원','green')}
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700;font-size:16px;border-top:1px solid var(--border);margin-top:4px">
+        <span>순이익</span><span class="mono ${profit>=0?'text-g':'text-r'}">${profit>=0?'+':''}${fmt(profit)}원</span>
+      </div>
+      ${row('마진율',fd(margin,1)+'%',margin>=0?'green':'red')}
+      ${row('kg당 이익',fd(net>0?profit/net:0,1)+'원/kg')}
+    </div>`;
+}
+const row=(l,v,c)=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${l}</span><span class="mono ${c?'text-'+c[0]:''}">${v}</span></div>`;
+const rowB=(l,v)=>`<div style="display:flex;justify-content:space-between;padding:5px 0;font-weight:600"><span>${l}</span><span class="mono">${v}</span></div>`;
+
+// ==============================
+// PRINT UTIL
+// ==============================
+function printDoc(content, title){
+  const w=window.open('','_blank','width=850,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Noto Sans KR',sans-serif;background:#fff;padding:20px;color:#000}
+    .doc{padding:0}.doc-title{text-align:center;font-size:20px;font-weight:900;letter-spacing:2px;padding:14px 0;border-bottom:3px solid #000;margin-bottom:16px}
+    .doc-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;margin-bottom:14px}
+    .doc-cell{padding:9px 12px;border-bottom:1px solid #bbb}.doc-cell:nth-child(odd){border-right:1px solid #bbb}
+    .doc-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+    .doc-val{font-size:13px;font-weight:600;font-family:monospace}
+    .doc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+    .doc-table th{background:#111;color:#fff;padding:7px 9px;font-size:10px;font-weight:700;text-align:center}
+    .doc-table td{border:1px solid #ccc;padding:7px 9px;text-align:center}.doc-table td.left{text-align:left}
+    .doc-table tr:nth-child(even) td{background:#f6f6f6}
+    .doc-sign{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:3px solid #000;margin-top:14px}
+    .doc-sign-c{padding:36px 12px 10px;text-align:center;border-right:1px solid #ccc;font-size:11px;font-weight:700}.doc-sign-c:last-child{border-right:none}
+    .doc-pat{display:flex;height:38px;border:2px solid #000;border-radius:3px;overflow:hidden;margin:8px 0}
+    .doc-ps{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+    .doc-loss{background:repeating-linear-gradient(45deg,#ddd,#ddd 4px,#eee 4px,#eee 8px);color:#999}
+    @media print{body{padding:8px}}
+  </style></head><body>${content}</body></html>`);
+  w.document.close();
+  w.onload=()=>{w.focus();w.print()};
+}
+
+// ==============================
+// INIT
+// ==============================
+load();
+// 구버전 DB 호환 — 새 필드 누락 시 기본값 보정
+DB.customers  = DB.customers  || [];
+DB.sheetStock = DB.sheetStock || [];
+DB.scalps     = DB.scalps     || [];
+DB.carryovers = DB.carryovers || [];
+DB.plans      = DB.plans      || [];
+if(!DB.nCustId) DB.nCustId = 1;
+if(!DB.nSsid)   DB.nSsid   = 1;
+if(!DB.nScid)   DB.nScid   = 1;
+
+// 공급자 정보 초기값 (설정에서 수정 가능)
+if(!localStorage.getItem('supplier')){
+  localStorage.setItem('supplier', JSON.stringify({
+    name:'(주)영성강업',
+    rep:'김종섭',
+    biz:'212-81-76228',
+    tel:'02-442-6061 / 010-3711-6061',
+    addr:'서울시 강동구 상암로 315 상가 2층 203호'
+  }));
+}
+
+document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('c-date').value=today();
+document.getElementById('i-month').value=thisMonth();
+renderOrders();
+renderCoils();
+refreshCustomerSelects();
+initBulkTable();
+updateBadge();
+setTimeout(calcProfit,100);
+</script>
+</body>
+</html>
