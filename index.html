@@ -148,19 +148,20 @@ tbody tr:hover{background:rgba(255,255,255,.025)}
 .mono{font-family:var(--mono)}.fw7{font-weight:700}.fs12{font-size:12px}.fs11{font-size:11px}
 
 .hide-mobile{display:inline}
-@media(max-width:640px){.hide-mobile{display:none}
-
+@media(max-width:640px){
+  .hide-mobile{display:none}
   .grid2,.grid3{grid-template-columns:1fr}
-  .content{padding:10px}
+  .content{padding:12px}
   .card{padding:14px}
-  .section-title{font-size:15px;margin-bottom:12px}
-  .stat-v{font-size:17px}
-  input,select{font-size:16px!important}
-  .tab{font-size:10px;padding:7px 1px}
-  .header{height:48px;padding:0 14px}
-  .logo{font-size:13px}
+  .section-title{font-size:16px}
+  .stat-v{font-size:18px}
+  .stats{grid-template-columns:1fr 1fr}
+  .header{height:46px;padding:0 12px}
   .logo em{display:none}
-  .btn{font-size:13px}
+  .tab{flex:1 1 0;padding:8px 0;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+  .tab-icon{font-size:18px;line-height:1}
+  .tab-txt{font-size:9px;width:100%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+  .tabs{overflow:hidden}
 }
 </style>
 </head>
